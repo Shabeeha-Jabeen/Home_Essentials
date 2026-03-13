@@ -1,0 +1,23 @@
+{% extends 'admin/base_admin.html' %}
+{% block content %}
+<div class="form-container" style="max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 20px; color: #2d3748;">Edit Nested Category</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Parent Sub Category</label>
+            <select name="subcategory" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                {% for sub in subcategories %}
+                <option value="{{ sub.id }}" {% if sub.id == nested.subcategory.id %}selected{% endif %}>{{ sub.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nested Category Name</label>
+            <input type="text" name="name" value="{{ nested.name }}" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+        </div>
+        <button type="submit" style="width: 100%; background: #4a5568; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Update Nested Category</button>
+    </form>
+</div>
+{% endblock %}

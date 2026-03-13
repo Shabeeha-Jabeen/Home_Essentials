@@ -1,0 +1,33 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Edit Material | AdminPanel{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto;">
+    <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #edf2f7;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #1a202c; font-size: 24px; font-weight: 700;">Edit Material</h2>
+            <p style="color: #718096; font-size: 14px;">Update the material name for products</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: 600; color: #4a5568; margin-bottom: 10px; font-size: 14px;">Material Name</label>
+                <input type="text" name="name" value="{{ material.name }}" required 
+                       style="width: 100%; padding: 12px 15px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.3s; font-size: 15px;"
+                       onfocus="this.style.borderColor='#008080'">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" style="flex: 2; background: #2d3748; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s;">
+                    Update Changes
+                </button>
+                <a href="{% url 'category_list' %}" style="flex: 1; text-align: center; background: #f7fafc; color: #718096; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 600; border: 1px solid #edf2f7;">
+                    Back
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

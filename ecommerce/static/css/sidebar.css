@@ -1,0 +1,118 @@
+/* Container and Layout */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f7f6;
+}
+
+.admin-wrapper {
+    display: flex;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: #1e293b;
+    color: #f8fafc;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 800;
+    text-align: center;
+    padding: 0 20px 30px;
+    color: #38bdf8;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 20px;
+}
+
+nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0 15px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #94a3b8;
+    font-size: 15px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.side-badge {
+    margin-left: auto;
+    background-color: #ef4444;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.msg-bg { background-color: #10b981; }
+
+.logout {
+    margin: 20px 15px 0;
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.1);
+    justify-content: center;
+}
+
+/* Main Content Area */
+.main-content {
+    margin-left: 260px; /* Sidebar width */
+    flex: 1;
+    padding: 30px;
+}
+
+/* Table Styling */
+.data-table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background: #f8fafc;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    color: #475569;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+}

@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home | Quality Home Appliances{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --dark-slate: #0f172a;
+        --offer-red: #ef4444;
+        --light-bg: #f8fafc;
+        --success-green: #22c55e;
+    }
+
+    /* Hero Carousel */
+    .hero { position: relative; overflow: hidden; height: 500px; background: #000; }
+    .carousel-container { display: flex; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; }
+    .slide { min-width: 100%; height: 100%; position: relative; }
+    .slide img { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
+    .slide-content { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); color: white; z-index: 5; max-width: 550px; }
+
+    .carousel-btn {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.2); border: none; color: white;
+        width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
+        z-index: 10; display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px); transition: 0.3s;
+    }
+    .carousel-btn:hover { background: white; color: var(--dark-slate); }
+
+    /* Modern Category Card */
+    .category-card {
+        text-decoration: none; display: block;
+        background: var(--light-bg); border-radius: 20px; padding: 25px 15px;
+        text-align: center; border: 1px solid #f1f5f9; transition: all 0.4s ease;
+    }
+    .category-card:hover {
+        background: white; transform: translateY(-10px);
+        border-color: var(--primary-blue);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.08);
+    }
+    .category-img-wrapper {
+        width: 85px; height: 85px; margin: 0 auto 15px;
+        border-radius: 50%; overflow: hidden; background: white;
+        border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    /* Product Card */
+    .product-card { 
+        background: #fff; border-radius: 15px; border: 1px solid #f1f5f9; 
+        transition: all 0.3s ease; position: relative; overflow: hidden; 
+        display: flex; flex-direction: column; height: 100%;
+    }
+    .product-card:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); }
+
+    /* Badges & Ribbons */
+    .offer-ribbon {
+        position: absolute; top: 0; left: 0; width: 85px; height: 85px; 
+        overflow: hidden; z-index: 10; pointer-events: none;
+    }
+    .offer-ribbon span {
+        background: var(--offer-red); color: white; text-align: center; 
+        font-size: 10px; font-weight: 900; padding: 4px 0; width: 120px; 
+        position: absolute; top: 18px; left: -32px; transform: rotate(-45deg); 
+        text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .new-arrival-badge {
+        position: absolute; top: 15px; left: 15px; z-index: 10;
+        background: var(--success-green); color: white; padding: 4px 12px;
+        border-radius: 50px; font-size: 10px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .standard-add-btn { 
+        background-color: var(--dark-slate); color: white; border: none; 
+        padding: 13px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; 
+        cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; 
+    }
+    .standard-add-btn:hover { background-color: var(--primary-blue); }
+</style>
+
+<section class="hero">
+    <button class="carousel-btn" onclick="changeSlide(-1)" style="left: 25px;"><i class="fas fa-chevron-left"></i></button>
+    <button class="carousel-btn" onclick="changeSlide(1)" style="right: 25px;"><i class="fas fa-chevron-right"></i></button>
+    <div class="carousel-container" id="heroCarousel">
+        {% for slide in carousels %}
+        <div class="slide">
+            <img src="{{ slide.image.url }}" alt="{{ slide.title }}">
+            <div class="slide-content">
+                <h1 style="font-size: 3.2rem; font-weight: 900; line-height: 1.1; margin-bottom: 15px;">{{ slide.title|linebreaksbr }}</h1>
+                <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 25px;">{{ slide.subtitle }}</p>
+                {% if slide.button_text %}
+                <a href="{{ slide.button_link }}" style="background: var(--primary-blue); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; display: inline-block;">{{ slide.button_text }}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section style="padding: 5rem 5% 2rem;">
+    <div style="text-align: center; margin-bottom: 3.5rem;">
+        <h2 style="font-size: 2rem; font-weight: 800; color: var(--dark-slate);">Explore Categories</h2>
+        <p style="color: #64748b; margin-top: 5px;">Find exactly what you need for your home</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px;">
+        {% for cat in categories %}
+        <a href="{% url 'category_product_list' %}?main_category={{ cat.name }}" class="category-card">
+            <div class="category-img-wrapper">
+                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--dark-slate); margin-bottom: 4px;">{{ cat.name }}</h3>
+            <span style="font-size: 0.75rem; color: var(--primary-blue); font-weight: 600;">Browse Now</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+{% if new_arrivals %}
+<section style="padding: 4rem 5% 4rem; background: var(--light-bg);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <div>
+            <h2 style="font-size: 2rem; font-weight: 800; color: var(--dark-slate); margin: 0;">New Arrivals</h2>
+            <p style="color: #64748b; margin-top: 5px;">Check out our latest collections</p>
+        </div>
+        <a href="{% url 'category_product_list' %}?sort=new_arrivals" style="color: var(--primary-blue); font-weight: 700; text-decoration: none;">View Newest <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2.5rem;">
+        {% for product in new_arrivals %}
+        <div class="product-card">
+            <div class="new-arrival-badge">New</div>
+            {% if product.is_offer %}<div class="offer-ribbon"><span>Offer</span></div>{% endif %}
+            
+            <form action="{% url 'add_to_wishlist' product.id %}" method="POST" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: white; border: none; width: 35px; height: 35px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;">
+                    <i class="fa{% if product.id in wishlist_product_ids %}s{% else %}r{% endif %} fa-heart" 
+                       style="color: {% if product.id in wishlist_product_ids %}#ef4444{% else %}#94a3b8{% endif %};"></i>
+                </button>
+            </form>
+
+            <div style="height: 250px; display: flex; align-items: center; justify-content: center; padding: 25px; background: #fff;">
+                <a href="{% url 'product_detail' product.id %}" style="display: block; width: 100%; height: 100%;">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </a>
+            </div>
+
+            <div style="padding: 20px; flex-grow: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.7rem; color: var(--primary-blue); font-weight: 800; text-transform: uppercase;">{{ product.brand.name }}</span>
+                        <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                            <h3 style="font-size: 1rem; margin: 8px 0; height: 44px; overflow: hidden; line-height: 1.4; color: var(--dark-slate); font-weight: 600;">{{ product.name }}</h3>
+                        </a>
+                    </div>
+                    <button class="js-share-btn" data-title="{{ product.name }}" data-url="{% url 'product_detail' product.id %}"
+                            style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #64748b;">
+                        <i class="fas fa-share-alt" style="font-size: 0.8rem;"></i>
+                    </button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 12px;">
+                    {% if product.is_offer and product.discount_price %}
+                        <span style="font-size: 1.25rem; font-weight: 800; color: var(--offer-red);">₹{{ product.discount_price }}</span>
+                        <span style="font-size: 0.95rem; text-decoration: line-through; color: #94a3b8;">₹{{ product.price }}</span>
+                    {% else %}
+                        <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-slate);">₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="padding: 0 20px 20px;">
+                <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="standard-add-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section style="padding: 5rem 5% 5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2rem; font-weight: 800; color: var(--dark-slate);">Featured Deals</h2>
+        <a href="{% url 'category_product_list' %}" style="color: var(--primary-blue); font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px;">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2.5rem;">
+        {% for product in featured_products %}
+        <div class="product-card">
+            {% if product.is_offer %}<div class="offer-ribbon"><span>Offer</span></div>{% endif %}
+
+            <form action="{% url 'add_to_wishlist' product.id %}" method="POST" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: white; border: none; width: 35px; height: 35px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;">
+                    <i class="fa{% if product.id in wishlist_product_ids %}s{% else %}r{% endif %} fa-heart" 
+                       style="color: {% if product.id in wishlist_product_ids %}#ef4444{% else %}#94a3b8{% endif %};"></i>
+                </button>
+            </form>
+
+            <div style="height: 250px; display: flex; align-items: center; justify-content: center; padding: 25px; background: #fff;">
+                <a href="{% url 'product_detail' product.id %}" style="display: block; width: 100%; height: 100%;">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </a>
+            </div>
+
+            <div style="padding: 20px; flex-grow: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 0.7rem; color: var(--primary-blue); font-weight: 800; text-transform: uppercase;">{{ product.brand.name }}</span>
+                        <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                            <h3 style="font-size: 1rem; margin: 8px 0; height: 44px; overflow: hidden; line-height: 1.4; color: var(--dark-slate); font-weight: 600;">{{ product.name }}</h3>
+                        </a>
+                    </div>
+                    <button class="js-share-btn" data-title="{{ product.name }}" data-url="{% url 'product_detail' product.id %}"
+                            style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #64748b;">
+                        <i class="fas fa-share-alt" style="font-size: 0.8rem;"></i>
+                    </button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 12px;">
+                    {% if product.is_offer and product.discount_price %}
+                        <span style="font-size: 1.25rem; font-weight: 800; color: var(--offer-red);">₹{{ product.discount_price }}</span>
+                        <span style="font-size: 0.95rem; text-decoration: line-through; color: #94a3b8;">₹{{ product.price }}</span>
+                    {% else %}
+                        <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-slate);">₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="padding: 0 20px 20px;">
+                <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="standard-add-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+    const carousel = document.getElementById('heroCarousel');
+    const slides = document.querySelectorAll('#heroCarousel .slide');
+    let currentIndex = 0;
+    function updateCarousel() { carousel.style.transform = `translateX(-${currentIndex * 100}%)`; }
+    function changeSlide(direction) { currentIndex = (currentIndex + direction + slides.length) % slides.length; updateCarousel(); }
+    if(slides.length > 1) setInterval(() => changeSlide(1), 5000);
+
+    document.querySelectorAll('.js-share-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = window.location.origin + this.dataset.url;
+            if (navigator.share) {
+                navigator.share({ title: this.dataset.title, url: url });
+            } else {
+                navigator.clipboard.writeText(url);
+                const icon = this.querySelector('i');
+                icon.className = 'fas fa-check';
+                icon.style.color = '#22c55e';
+                setTimeout(() => { 
+                    icon.className = 'fas fa-share-alt'; 
+                    icon.style.color = '#64748b';
+                }, 2000);
+            }
+        });
+    });
+</script>
+{% endblock %}

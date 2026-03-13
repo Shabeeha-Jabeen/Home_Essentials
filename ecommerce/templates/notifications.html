@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    body { background-color: #f8fafc !important; font-family: 'Inter', sans-serif; }
+    .profile-layout { display: flex; gap: 30px; margin-top: 40px; align-items: flex-start; }
+    .sidebar-container { width: 280px; flex-shrink: 0; position: sticky; top: 20px; }
+    .main-content-area { flex-grow: 1; }
+
+    /* Sidebar Styles */
+    .sidebar-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid #f1f1f1; }
+    .nav-link { color: #64748b; padding: 14px 25px; display: flex; align-items: center; text-decoration: none; transition: 0.2s; border-left: 4px solid transparent; font-weight: 500; }
+    .nav-link i { margin-right: 15px; width: 20px; font-size: 1.1rem; }
+    .nav-link:hover { background-color: #f8fafc; color: #2563eb; }
+    .nav-link.active { background-color: #eff6ff; color: #2563eb; border-left: 4px solid #2563eb; font-weight: 600; }
+
+    /* Notification Card Styles */
+    .notify-link-wrapper { text-decoration: none; color: inherit; display: block; cursor: pointer; margin-bottom: 12px; }
+    .notification-card {
+        background: #fff; border-radius: 14px; padding: 15px; 
+        border: 1px solid #f1f5f9; display: flex; gap: 15px; transition: 0.3s; position: relative;
+    }
+    .notification-card.unread { background: #f0f7ff; border-left: 4px solid #2563eb; }
+    .notification-card:hover { transform: translateX(5px); border-color: #2563eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .notification-card:active { transform: scale(0.99); }
+    
+    .notify-img-container { width: 60px; height: 60px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .notify-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+    .notify-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+    }
+    .icon-order { background: #dcfce7; color: #16a34a; }
+    .icon-promo { background: #fef9c3; color: #ca8a04; }
+    .icon-account { background: #fee2e2; color: #dc2626; }
+    .icon-system { background: #f1f5f9; color: #64748b; }
+
+    .notify-content { flex-grow: 1; }
+    .notify-title { font-weight: 700; color: #1e293b; margin-bottom: 3px; font-size: 0.95rem; }
+    .notify-desc { color: #64748b; font-size: 0.85rem; line-height: 1.4; }
+    .notify-time { color: #94a3b8; font-size: 0.75rem; margin-top: 8px; display: block; }
+
+    .unread-dot { width: 10px; height: 10px; background: #2563eb; border-radius: 50%; position: absolute; top: 15px; right: 15px; border: 2px solid #fff; }
+    .custom-hr { border: 0; height: 1px; background: #e2e8f0; margin: 10px 0 25px; }
+
+    @media (max-width: 768px) {
+        .profile-layout { flex-direction: column; }
+        .sidebar-container { width: 100%; position: relative; top: 0; }
+    }
+</style>
+
+<div class="container pb-5">
+    <div class="profile-layout">
+        
+        <div class="sidebar-container">
+            <div class="sidebar-card">
+                <nav class="nav flex-column py-3">
+                    <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> Back to Home</a>
+                    <a class="nav-link" href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> My Profile</a>
+                    <a class="nav-link" href="{% url 'order_list' %}"><i class="fas fa-box"></i> My Orders</a>
+                    <a class="nav-link active" href="#"><i class="fas fa-bell"></i> Notifications</a>
+                    <a class="nav-link" href="{% url 'wishlist_view' %}"><i class="fas fa-heart"></i> Wishlist</a>
+                    <hr class="mx-3 my-2 text-muted">
+                    <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="fw-bold mb-0" style="color: #1e293b;">
+                    Notifications 
+                    {% if unread_count > 0 %}
+                    <span class="badge bg-primary rounded-pill ms-2" style="font-size: 0.8rem;">{{ unread_count }} New</span>
+                    {% endif %}
+                </h4>
+                {% if unread_count > 0 %}
+                <a href="{% url 'mark_all_read' %}" class="text-primary text-decoration-none small fw-bold">
+                    <i class="fas fa-check-double me-1"></i> Mark all as read
+                </a>
+                {% endif %}
+            </div>
+            <hr class="custom-hr">
+
+            {% for notification in notifications %}
+            <a href="{% url 'read_notification' notification.id %}" class="notify-link-wrapper">
+                <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+                    
+                    {% if notification.image %}
+                    <div class="notify-img-container">
+                        <img src="{{ notification.image.url }}" alt="Notification Image">
+                    </div>
+                    {% else %}
+                    <div class="notify-icon 
+                        {% if notification.notification_type == 'Order' %}icon-order
+                        {% elif notification.notification_type == 'Promo' or notification.notification_type == 'Offer' %}icon-promo
+                        {% elif notification.notification_type == 'Account' %}icon-account
+                        {% else %}icon-system{% endif %}">
+                        
+                        {% if notification.notification_type == 'Order' %}<i class="fas fa-shopping-basket"></i>
+                        {% elif notification.notification_type == 'Promo' or notification.notification_type == 'Offer' %}<i class="fas fa-percentage"></i>
+                        {% elif notification.notification_type == 'Account' %}<i class="fas fa-user-shield"></i>
+                        {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="notify-content">
+                        <div class="notify-title">{{ notification.title }}</div>
+                        <div class="notify-desc">{{ notification.message }}</div>
+                        <span class="notify-time"><i class="far fa-clock me-1"></i> {{ notification.created_at|timesince }} ago</span>
+                    </div>
+
+                    {% if not notification.is_read %}
+                    <div class="unread-dot"></div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-center p-5 bg-white rounded-4 border" style="border-style: dashed !important; border-width: 2px !important;">
+                <div class="mb-3">
+                    <i class="fas fa-bell-slash fa-3x text-light"></i>
+                </div>
+                <h5 class="text-dark fw-bold">No notifications yet</h5>
+                <p class="text-muted mb-0">We'll let you know when something important happens.</p>
+                <a href="{% url 'home' %}" class="btn btn-primary btn-sm mt-3 px-4 rounded-pill">Continue Shopping</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

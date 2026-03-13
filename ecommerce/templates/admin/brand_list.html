@@ -1,0 +1,126 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Brand Management | Admin{% endblock %}
+
+{% block content %}
+<style>
+    /* Form Styling */
+    .add-card { 
+        background: white; padding: 25px; border-radius: 12px; 
+        margin-bottom: 30px; border: 1px solid #edf2f7; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .form-grid { 
+        display: grid; grid-template-columns: 1fr 1fr auto; 
+        gap: 15px; align-items: center; 
+    }
+    
+    input[type="text"], input[type="file"] { 
+        padding: 10px; border: 1px solid #e2e8f0; 
+        border-radius: 8px; outline: none; width: 100%;
+        transition: 0.3s;
+    }
+    
+    input[type="text"]:focus { border-color: #008080; box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.1); }
+
+    .btn-save { 
+        background: #008080; color: white; border: none; 
+        padding: 12px 25px; border-radius: 8px; 
+        cursor: pointer; font-weight: 600; transition: 0.3s;
+    }
+    .btn-save:hover { background: #006666; transform: translateY(-1px); }
+
+    /* Table Styling */
+    .table-card { 
+        background: white; border-radius: 12px; 
+        border: 1px solid #edf2f7; overflow: hidden; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th { 
+        background: #f8fafc; padding: 15px; text-align: left; 
+        color: #718096; font-size: 12px; text-transform: uppercase; 
+        border-bottom: 2px solid #edf2f7; 
+    }
+    td { padding: 15px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
+    
+    .brand-logo-img { 
+        width: 50px; height: 50px; object-fit: contain; 
+        background: #f9f9f9; border-radius: 6px; border: 1px solid #eee; 
+    }
+    
+    /* Fallback Logo Style */
+    .no-logo-placeholder {
+        width: 50px; height: 50px; background: #f1f5f9; border-radius: 6px; 
+        display: flex; align-items: center; justify-content: center; 
+        color: #94a3b8; border: 1px dashed #cbd5e1;
+    }
+
+    .delete-btn { color: #e53e3e; text-decoration: none; font-weight: 600; font-size: 13px; }
+    .delete-btn:hover { text-decoration: underline; }
+</style>
+
+<div class="mb-4">
+    <h1 style="color: #1a202c; font-weight: 700; font-size: 28px;">Brand Management</h1>
+    <p class="text-muted">Add and manage the brands available in your store.</p>
+</div>
+
+<div class="add-card">
+    <h3 style="margin-bottom: 15px; font-size: 16px; color: #4a5568; font-weight: 600;">Add New Brand</h3>
+    <form method="POST" enctype="multipart/form-data" class="form-grid">
+        {% csrf_token %}
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: #718096;">BRAND NAME *</label>
+            <input type="text" name="brand_name" placeholder="E.g. Apple" required>
+        </div>
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: #718096;">LOGO (OPTIONAL)</label>
+            <input type="file" name="brand_logo" accept="image/*" class="form-control">
+        </div>
+        <div style="padding-top: 18px;">
+            <button type="submit" class="btn-save">+ Add Brand</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>Logo</th>
+                <th>Brand Name</th>
+                <th style="text-align: right; padding-right: 25px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for brand in brands %}
+            <tr>
+                <td>
+                    {% if brand.logo %}
+                        <img src="{{ brand.logo.url }}" class="brand-logo-img" alt="{{ brand.name }}">
+                    {% else %}
+                        <div class="no-logo-placeholder">
+                            <span style="font-size: 10px; font-weight: bold;">NO LOGO</span>
+                        </div>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600; color: #2d3748;">{{ brand.name }}</td>
+                <td style="text-align: right; padding-right: 25px;">
+                    <a href="{% url 'delete_brand' brand.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete {{ brand.name }}?')">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center; padding: 40px; color: #a0aec0;">
+                    No brands available. Start by adding one above.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

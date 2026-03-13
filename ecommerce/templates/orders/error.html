@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="text-align: center; margin-top: 50px;">
+    <h2>Payment Error!</h2>
+    <p>{{ error }}</p>
+    <a href="{% url 'cart_view' %}">Go back to Cart</a>
+</div>
+{% endblock %}

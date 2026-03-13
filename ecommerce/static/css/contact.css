@@ -1,0 +1,73 @@
+.contact-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 5%;
+}
+
+.contact-header { text-align: center; margin-bottom: 40px; }
+.contact-header h1 { color: #1e3a8a; font-size: 2.2rem; }
+
+.stores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.store-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    position: relative;
+    transition: 0.3s;
+}
+
+.store-card:hover { transform: translateY(-5px); border-color: #3b82f6; }
+
+.store-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.store-loc { color: #64748b; font-size: 0.95rem; margin-bottom: 25px; }
+
+.store-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.store-actions a {
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.btn-call { background: #2563eb; color: white; }
+.btn-wa { background: #22c55e; color: white; }
+
+.timing { font-size: 0.85rem; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+
+.delivery-banner {
+    margin-top: 50px;
+    background: #1e293b;
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}

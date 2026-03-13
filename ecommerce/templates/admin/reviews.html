@@ -1,0 +1,119 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Product Reviews | Admin{% endblock %}
+
+{% block content %}
+<style>
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    
+    .table-card { 
+        background: white; border-radius: 12px; border: 1px solid #edf2f7; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden;
+    }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th { 
+        background: #f8fafc; padding: 18px 15px; text-align: left; 
+        color: #718096; font-size: 12px; text-transform: uppercase;
+        border-bottom: 2px solid #edf2f7;
+    }
+    td { padding: 15px; border-bottom: 1px solid #edf2f7; font-size: 14px; color: #2d3748; }
+
+    .rating-badge {
+        background: #fff9db; color: #f08c00; padding: 4px 10px; 
+        border-radius: 20px; font-weight: 700; font-size: 12px;
+        display: inline-flex; align-items: center; gap: 4px;
+    }
+    
+    .comment-text {
+        max-width: 350px; line-height: 1.5; color: #4a5568; font-style: italic;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { 
+        width: 32px; height: 32px; background: #e2e8f0; 
+        border-radius: 50%; display: flex; align-items: center; 
+        justify-content: center; font-weight: bold; color: #718096;
+    }
+
+    .btn-delete {
+        color: #e53e3e; text-decoration: none; font-weight: 600;
+        font-size: 13px; transition: 0.2s; padding: 6px 12px;
+        border-radius: 6px;
+    }
+    .btn-delete:hover { background: #fff5f5; }
+</style>
+
+<div class="header-row">
+    <div>
+        <h1 style="font-size: 26px; color: #1a202c; font-weight: 700;">Customer Reviews</h1>
+        <p style="color: #718096;">Monitor and manage product feedback from users.</p>
+    </div>
+</div>
+
+<div class="table-card">
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>User</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600; color: #008080;">{{ review.product.name }}</div>
+                        <small style="color: #a0aec0;">ID: #{{ review.product.id }}</small>
+                    </td>
+                    
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">{{ review.user.username|slice:":1"|upper }}</div>
+                            <span>{{ review.user.username }}</span>
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="rating-badge">
+                            {{ review.rating }} <span>★</span>
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="comment-text">
+                            "{{ review.comment|truncatechars:80 }}"
+                        </div>
+                    </td>
+                    
+                    <td style="color: #718096; font-size: 13px;">
+                        {{ review.created_at|date:"d M, Y" }}
+                    </td>
+                    
+                    <td>
+                        <a href="{% url 'delete_review' review.id %}" 
+                           class="btn-delete"
+                           onclick="return confirm('Delete this review permanently?')">
+                           🗑️ Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 60px; text-align: center; color: #a0aec0;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
+                        No reviews have been posted yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

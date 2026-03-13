@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: sans-serif;">
+    <h2 style="margin-bottom: 30px; font-weight: 700;">My Wallet</h2>
+
+    <div style="background: linear-gradient(135deg, #2563eb, #1e40af); color: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
+        <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 10px;">Available Balance</p>
+        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 800;">₹{{ wallet.balance }}</h1>
+    </div>
+
+    <div style="margin-top: 40px;">
+        <h3 style="margin-bottom: 20px; color: #1e293b;">Transaction History</h3>
+        
+        {% if transactions %}
+            <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #f8fafc;">
+                        <tr>
+                            <th style="padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0;">Details</th>
+                            <th style="padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0;">Type</th>
+                            <th style="padding: 15px; text-align: right; border-bottom: 1px solid #e2e8f0;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 15px;">
+                                <div style="font-weight: 600;">{{ tx.description }}</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">{{ tx.created_at|date:"d M Y, h:i A" }}</div>
+                            </td>
+                            <td style="padding: 15px;">
+                                {% if tx.transaction_type == 'CREDIT' %}
+                                    <span style="color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem;">Credit</span>
+                                {% else %}
+                                    <span style="color: #991b1b; background: #fee2e2; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem;">Debit</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px; text-align: right; font-weight: 700; color: {% if tx.transaction_type == 'CREDIT' %}#16a34a{% else %}#dc2626{% endif %};">
+                                {% if tx.transaction_type == 'CREDIT' %}+{% else %}-{% endif %} ₹{{ tx.amount }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 15px; color: #64748b;">
+                No transactions yet.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

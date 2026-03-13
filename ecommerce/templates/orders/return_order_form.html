@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 500px; margin: 60px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-family: sans-serif;">
+    <h3 style="color: #1e293b; margin-bottom: 10px;">Return Order #{{ order.id }}</h3>
+    <p style="color: #64748b; margin-bottom: 25px;">Please provide a reason for returning your items.</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Reason</label>
+            <select name="reason" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;">
+                <option value="Product is damaged">Product is damaged</option>
+                <option value="Received wrong item">Received wrong item</option>
+                <option value="Defective / Doesn't work">Defective / Doesn't work</option>
+                <option value="Better price available">Better price available</option>
+                <option value="Changed my mind">Changed my mind</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Comments (Optional)</label>
+            <textarea name="comments" rows="4" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;" placeholder="Tell us more about the issue..."></textarea>
+        </div>
+        
+        <button type="submit" style="width: 100%; background: #2563eb; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s;">
+            Submit Request
+        </button>
+        <a href="{% url 'order_list' %}" style="display: block; text-align: center; margin-top: 15px; color: #64748b; text-decoration: none;">Go Back</a>
+    </form>
+</div>
+{% endblock %}

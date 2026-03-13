@@ -1,0 +1,114 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}System Notifications | HomeEssentials{% endblock %}
+
+{% block content %}
+<style>
+    /* നമ്മൾ നേരത്തെ ഉപയോഗിച്ച സിസ്റ്റവുമായി മാച്ച് ചെയ്യാൻ */
+    .header-section { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .noti-link { text-decoration: none !important; display: block; color: inherit; }
+    
+    .noti-card {
+        background: #ffffff; border-radius: 16px; padding: 20px;
+        margin-bottom: 15px; display: flex; align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.3s ease;
+        position: relative; border-left: 6px solid #dfe6e9;
+        border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;
+    }
+
+    /* വായിച്ചവയ്ക്ക് മങ്ങൽ */
+    .is-read { opacity: 0.65; background: #fcfcfc; }
+
+    .noti-card:hover { transform: translateX(8px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    
+    .icon-wrapper { 
+        width: 55px; height: 55px; border-radius: 14px; display: flex; 
+        align-items: center; justify-content: center; font-size: 22px; 
+        margin-right: 20px; flex-shrink: 0;
+    }
+
+    /* കാറ്റഗറി കളറുകൾ */
+    .low-stock { border-left-color: #ef4444 !important; } /* Red */
+    .low-stock .icon-wrapper { background: #fef2f2; color: #ef4444; }
+
+    .high-value { border-left-color: #10b981 !important; } /* Green */
+    .high-value .icon-wrapper { background: #ecfdf5; color: #10b981; }
+
+    .system-msg { border-left-color: #3b82f6 !important; } /* Blue */
+    .system-msg .icon-wrapper { background: #eff6ff; color: #3b82f6; }
+
+    .new-user { border-left-color: #8b5cf6 !important; } /* Purple */
+    .new-user .icon-wrapper { background: #f5f3ff; color: #8b5cf6; }
+
+    .noti-content { flex-grow: 1; }
+    .noti-title { font-weight: 700; color: #1e293b; font-size: 16px; margin-bottom: 4px; }
+    .noti-message { color: #64748b; font-size: 14px; line-height: 1.5; }
+    
+    .unread-dot { 
+        width: 12px; height: 12px; background-color: #3b82f6; 
+        border-radius: 50%; margin-left: 15px;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .btn-read-all {
+        background: white; border: 1px solid #e2e8f0; padding: 8px 16px;
+        border-radius: 10px; font-size: 13px; font-weight: 600;
+        color: #64748b; text-decoration: none; transition: 0.2s;
+    }
+    .btn-read-all:hover { background: #f8fafc; color: #1e293b; }
+</style>
+
+<div class="header-section">
+    <div>
+        <h1>System Notifications</h1>
+        <p>Real-time alerts and internal system updates.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <a href="{% url 'admin_mark_all_read' %}" class="btn-read-all">
+            <i class="fas fa-check-double" style="margin-right: 5px;"></i> Mark all as read
+        </a>
+        <div style="background: #0d9488; color: white; padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 700;">
+            {{ notifications.count }} Total
+        </div>
+    </div>
+</div>
+
+<div class="noti-list">
+    {% for notification in notifications %}
+    <a href="{% url 'admin_read_notification' notification.id %}" class="noti-link">
+        <div class="noti-card 
+            {% if notification.is_read %}is-read{% endif %}
+            {% if 'Stock' in notification.title %}low-stock
+            {% elif 'Order' in notification.title or 'Value' in notification.title %}high-value
+            {% elif 'Welcome' in notification.title or 'User' in notification.title %}new-user
+            {% else %}system-msg{% endif %}">
+            
+            <div class="icon-wrapper">
+                {% if 'Stock' in notification.title %}<i class="fas fa-exclamation-triangle"></i>
+                {% elif 'Order' in notification.title or 'Value' in notification.title %}<i class="fas fa-shopping-bag"></i>
+                {% elif 'Welcome' in notification.title or 'User' in notification.title %}<i class="fas fa-user-plus"></i>
+                {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            </div>
+
+            <div class="noti-content">
+                <div class="noti-title">{{ notification.title }}</div>
+                <div class="noti-message">{{ notification.message }}</div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 8px; display: flex; align-items: center; gap: 5px;">
+                    <i class="far fa-clock"></i> {{ notification.created_at|timesince }} ago
+                </div>
+            </div>
+
+            {% if not notification.is_read %}
+                <div class="unread-dot" title="Unread"></div>
+            {% endif %}
+        </div>
+    </a>
+    {% empty %}
+    <div style="text-align: center; padding: 100px 20px;">
+        <div style="font-size: 60px; margin-bottom: 20px; opacity: 0.2;">🔔</div>
+        <h3 style="color: #64748b;">No new notifications</h3>
+        <p style="color: #94a3b8;">Everything is up to date.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

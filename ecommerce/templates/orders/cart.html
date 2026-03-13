@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+
+<style>
+    /* Tag for the selected variant */
+    .variant-tag {
+        display: inline-block;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    /* Material info */
+    .material-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+</style>
+
+<div class="cart-page">
+    <div class="cart-container">
+        <div class="cart-items">
+            <h2>Shopping Cart ({{ cart_items.count }})</h2>
+            <hr>
+            {% for item in cart_items %}
+            <div class="item-row">
+                <img src="{{ item.product.image.url }}" class="item-img">
+                
+                <div class="item-info">
+                    <h4>{{ item.product.name }}</h4>
+                    
+                    {% if item.product.material %}
+                    <p class="material-text">Material: {{ item.product.material.name }}</p>
+                    {% endif %}
+
+                    {% if item.variant %}
+                    <span class="variant-tag">{{ item.variant.size_or_volume }}</span>
+                    {% endif %}
+
+                    <p class="price-text">
+                        Price: ₹{% if item.variant %}{{ item.variant.price }}{% else %}{{ item.product.discount_price|default:item.product.price }}{% endif %}
+                    </p>
+                </div>
+
+                <div class="item-qty">
+                    <div class="qty-wrapper" style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 6px; width: fit-content; overflow: hidden;">
+                        <a href="{% url 'update_cart' item.id 'remove' %}" class="qty-btn" style="padding: 5px 12px; background: #f8fafc; text-decoration: none; color: #333; border-right: 1px solid #ddd; font-weight: bold;">−</a>
+                        <span style="padding: 5px 15px; min-width: 30px; text-align: center; font-weight: 600;">{{ item.quantity }}</span>
+                        <a href="{% url 'update_cart' item.id 'add' %}" class="qty-btn" style="padding: 5px 12px; background: #f8fafc; text-decoration: none; color: #333; border-left: 1px solid #ddd; font-weight: bold;">+</a>
+                    </div>
+                </div>
+
+                <div class="item-price">
+                    <p style="font-weight: 700; margin-bottom: 5px;">₹{{ item.sub_total }}</p>
+                    <a href="{% url 'remove_cart_item' item.id %}" class="remove-lnk" style="color: #ef4444; font-size: 13px; text-decoration: none;">Remove</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-msg" style="text-align: center; padding: 40px;">
+                <p>Your cart is empty!</p>
+                <a href="{% url 'category_product_list' %}" class="shop-now">Go Shopping</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <aside class="cart-summary">
+            <h3>Summary</h3>
+            <div class="sum-row">
+                <span>Subtotal</span>
+                <span>₹{{ cart.total_price }}</span>
+            </div>
+            <div class="sum-row" style="color: #10b981;">
+                <span>Shipping</span>
+                <span>FREE</span>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <div class="sum-row total">
+                <span>Grand Total</span>
+                <span>₹{{ cart.total_price }}</span>
+            </div>
+            <a href="{% url 'checkout' %}" style="text-decoration: none;">
+                <button class="checkout-btn" style="width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px;">
+                    Proceed to Checkout
+                </button>
+            </a>
+        </aside>
+    </div>
+</div>
+{% endblock %}

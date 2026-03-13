@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --border: #e2e8f0;
+        --bg-light: #f8fafc;
+        --text-dark: #1e293b;
+    }
+
+    /* 1. Brand Section */
+    .brand-section {
+        background: #fff; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid var(--border);
+    }
+    .brand-nav {
+        display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;
+    }
+    .brand-nav::-webkit-scrollbar { display: none; }
+
+    .brand-card { flex: 0 0 auto; width: 90px; text-align: center; text-decoration: none; }
+    .brand-logo-circle {
+        width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--border);
+        background: #fff; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 8px; overflow: hidden; transition: 0.3s;
+    }
+    .brand-logo-circle img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+    .brand-card.active .brand-logo-circle { border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 15px rgba(37,99,235,0.15); }
+    .brand-card span { font-size: 11px; color: #64748b; font-weight: 700; }
+
+    /* 2. Sidebar Hierarchy */
+    .sidebar { width: 280px; flex-shrink: 0; }
+    .sidebar-inner { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 20px; position: sticky; top: 20px; }
+    
+    .filter-link { 
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 15px; border-radius: 12px; text-decoration: none; 
+        color: var(--text-dark); font-size: 14px; margin-bottom: 5px; transition: 0.2s;
+    }
+    .filter-link:hover { background: var(--bg-light); }
+    .filter-link.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+    .sub-group { margin-left: 15px; border-left: 1px solid var(--border); padding-left: 10px; margin-top: 5px; }
+
+    /* Material Filter Style */
+    .material-box {
+        background: var(--bg-light); border: 1px dashed var(--primary); border-radius: 12px;
+        padding: 12px; margin: 10px 0;
+    }
+    .mat-link {
+        display: block; font-size: 12px; text-decoration: none; color: #64748b; padding: 5px 0;
+    }
+    .mat-link.active { color: var(--primary); font-weight: 700; }
+
+    /* 3. Product Cards */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+    .product-card { 
+        background: #fff; border: 1px solid var(--border); border-radius: 20px; 
+        padding: 12px; transition: 0.3s; position: relative; overflow: hidden;
+    }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+    .img-box { 
+        height: 220px; background: #f1f5f9; border-radius: 15px; 
+        position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .img-box img { max-width: 85%; max-height: 85%; transition: 0.5s; }
+    .product-card:hover .img-box img { transform: scale(1.1); }
+
+    .wishlist-btn {
+        position: absolute; top: 12px; right: 12px; background: #fff;
+        width: 35px; height: 35px; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; color: #cbd5e1;
+        cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; z-index: 10;
+    }
+    .wishlist-btn:hover { color: #ef4444; }
+
+    .card-body { padding: 15px 5px 5px; }
+    .brand-tag { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+    .product-title { font-size: 15px; font-weight: 700; margin: 5px 0 10px; color: var(--text-dark); }
+    .price { font-size: 18px; font-weight: 900; color: var(--text-dark); }
+    
+    .add-cart-btn {
+        background: var(--primary); color: #fff; border: none;
+        padding: 10px 15px; border-radius: 12px; font-size: 13px;
+        font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    }
+    /* All Brands Special Design */
+.all-brands-card .brand-logo-circle {
+    background: #f1f5f9; /* Light grey base */
+    border: 1.5px solid #e2e8f0;
+}
+
+.all-brands-card.active .brand-logo-circle {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    border-color: #1e40af;
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+.all-brands-card.active .all-brands-icon {
+    color: #ffffff !important;
+}
+
+.all-brands-icon {
+    color: #475569;
+    transition: all 0.3s ease;
+}
+
+/* Hover Animation */
+.all-brands-card:hover .all-brands-icon {
+    transform: scale(1.15) rotate(15deg);
+}
+    /* Premium Styling */
+    .brand-section { background: #f8fafc; padding: 40px 0; }
+    
+    .brand-nav { 
+        display: flex; gap: 20px; overflow-x: auto; padding: 15px 5px;
+        scrollbar-width: none; /* Firefox */
+    }
+    .brand-nav::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+    .brand-card {
+        flex: 0 0 auto; text-decoration: none; display: flex; flex-direction: column;
+        align-items: center; gap: 12px; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    .brand-logo-circle {
+        width: 75px; height: 75px; border-radius: 22px; /* Smooth rounded corners */
+        background: #ffffff; border: 1.5px solid #f1f5f9;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; position: relative; transition: all 0.3s ease;
+    }
+
+    .brand-card span {
+        font-size: 13px; font-weight: 600; color: #64748b;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover & Active States */
+    .brand-card:hover .brand-logo-circle {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+        border-color: #3b82f6;
+    }
+
+    .brand-card.active .brand-logo-circle {
+        background: #eff6ff; border: 2px solid #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .brand-card.active span { color: #1e40af; font-weight: 700; }
+
+    .brand-logo-circle img {
+        width: 100%; height: 100%; object-fit: contain; padding: 12px;
+        filter: grayscale(20%); transition: filter 0.3s ease;
+    }
+
+    .brand-card:hover img, .brand-card.active img { filter: grayscale(0%); }
+
+    /* All Brands Icon Style */
+    .all-brands-icon { background: linear-gradient(135deg, #64748b, #475569); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+</style>
+
+<div class="brand-section">
+    <div class="container-fluid" style="max-width: 1500px; margin: auto; padding: 0 30px;">
+        <div class="brand-nav">
+            
+            <a href="?{% if request.GET.category %}category={{ request.GET.category }}{% endif %}" 
+               class="brand-card all-brands-card {% if not request.GET.brand %}active{% endif %} js-scroll-trigger">
+                <div class="brand-logo-circle">
+                    <i class="fas fa-grip all-brands-icon" style="font-size: 22px;"></i>
+                </div>
+                <span>All Brands</span>
+            </a>
+
+            {% for brand in brands %}
+            <a href="?brand={{ brand.id }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+               class="brand-card {% if request.GET.brand == brand.id|slugify %}active{% endif %} js-scroll-trigger">
+                
+                <div class="brand-logo-circle">
+                    {% if brand.logo %}
+                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" 
+                             style="width: 100%; height: 100%; object-fit: contain; padding: 12px;">
+                    {% else %}
+                        <span style="font-weight: 800; color: #3b82f6; font-size: 10px; text-transform: uppercase; text-align: center; padding: 5px;">
+                            {{ brand.name }}
+                        </span>
+                    {% endif %}
+                </div>
+                <span>{{ brand.name }}</span>
+            </a>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" style="max-width: 1500px; margin: auto; padding: 0 30px 50px;">
+    <div style="display: flex; gap: 30px;">
+        
+      <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        {% if request.GET.category %}
+        <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <a href="?{% if request.GET.brand %}brand={{ request.GET.brand }}{% endif %}" 
+               class="filter-link js-scroll-trigger" style="font-weight: 700; color: var(--primary);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back to All Categories
+            </a>
+        </div>
+        {% else %}
+        <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <a href="#" class="filter-link active" style="font-weight: 700;">
+                <i class="fas fa-layer-group" style="margin-right: 8px;"></i> All Categories
+            </a>
+        </div>
+        {% endif %}
+
+        <h6 style="font-weight: 800; margin-bottom: 15px; letter-spacing: 1px; font-size: 11px; color: #94a3b8; text-transform: uppercase;">
+            {% if request.GET.subcategory %} Sub-Category Filters
+            {% elif request.GET.category %} Explore Category
+            {% else %} Categories {% endif %}
+        </h6>
+
+        <div class="filter-group">
+            {% if not request.GET.category %}
+                {% for cat in categories %}
+                    <a href="?category={{ cat.id }}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}" 
+                       class="filter-link js-scroll-trigger">
+                        {{ cat.name }} <i class="fas fa-chevron-right" style="float: right; font-size: 10px; margin-top: 5px;"></i>
+                    </a>
+                {% endfor %}
+            {% endif %}
+
+            {% if request.GET.category and not request.GET.subcategory %}
+                {% for sub in sub_categories %}
+                    {% if sub.category_id|slugify == request.GET.category %}
+                        <a href="?category={{ request.GET.category }}&subcategory={{ sub.id }}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}" 
+                           class="filter-link js-scroll-trigger">
+                            {{ sub.name }} <i class="fas fa-chevron-right" style="float: right; font-size: 10px; margin-top: 5px;"></i>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if request.GET.subcategory %}
+                {% for nest in nested_categories %}
+                    {% if nest.subcategory_id|slugify == request.GET.subcategory %}
+                        <a href="?category={{ request.GET.category }}&subcategory={{ request.GET.subcategory }}&nested_category={{ nest.id }}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}" 
+                           class="filter-link {% if request.GET.nested_category == nest.id|slugify %}active{% endif %} js-scroll-trigger">
+                            • {{ nest.name }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if request.GET.nested_category and materials %}
+                <div class="material-box" style="margin-top: 15px; padding-left: 10px; border-left: 2px solid #eee;">
+                    <p style="font-size: 10px; font-weight: 800; color: var(--primary); margin-bottom: 5px;">MATERIALS</p>
+                    {% for mat in materials %}
+                        <a href="?category={{ request.GET.category }}&subcategory={{ request.GET.subcategory }}&nested_category={{ request.GET.nested_category }}&material={{ mat.id }}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}" 
+                           class="mat-link {% if request.GET.material == mat.id|slugify %}active{% endif %}">
+                            <i class="{% if request.GET.material == mat.id|slugify %}fas fa-check-circle{% else %}far fa-circle{% endif %}"></i> {{ mat.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <h6 style="font-weight: 800; margin-bottom: 15px; letter-spacing: 1px; font-size: 11px; color: #94a3b8; text-transform: uppercase;">Price Range</h6>
+            <form method="GET" action="">
+                {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+                {% if request.GET.subcategory %}<input type="hidden" name="subcategory" value="{{ request.GET.subcategory }}">{% endif %}
+                {% if request.GET.brand %}<input type="hidden" name="brand" value="{{ request.GET.brand }}">{% endif %}
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;">
+                    <span style="color: #94a3b8;">-</span>
+                    <input type="number" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;">
+                </div>
+                <button type="submit" style="width: 100%; margin-top: 10px; background: var(--dark-slate); color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                    Apply Price
+                </button>
+            </form>
+        </div>
+
+    </div>
+</aside>
+<main style="flex: 1;">
+    <div class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px;">
+        {% for product in products %}
+        <div class="product-card" style="position: relative; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #f1f5f9;">
+            
+            {% if product.is_offer %}
+            <div style="position: absolute; top: 0; left: 0; width: 100px; height: 100px; overflow: hidden; z-index: 10; pointer-events: none;">
+                <div style="background: #ef4444; color: white; text-align: center; font-size: 11px; font-weight: 900; padding: 5px 0; width: 140px; position: absolute; top: 20px; left: -35px; transform: rotate(-45deg); box-shadow: 0 2px 5px rgba(0,0,0,0.2); text-transform: uppercase; letter-spacing: 1px; border: 1px dashed rgba(255,255,255,0.4);">
+                    Special Offer
+                </div>
+            </div>
+
+            {% if product.discount_percentage %}
+            <div style="position: absolute; top: 55px; left: 10px; background: #000; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; z-index: 5; border: 2px solid white;">
+                -{{ product.discount_percentage }}%
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <button class="wishlist-btn js-wishlist-btn {% if product.id in wishlisted_products %}active{% endif %}" 
+                    data-id="{{ product.id }}" 
+                    style="border: none; background: white; cursor: pointer; border-radius: 50%; width: 35px; height: 35px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: absolute; top: 10px; right: 10px; z-index: 15;">
+                <i class="{% if product.id in wishlisted_products %}fas{% else %}far{% endif %} fa-heart" 
+                   style="color: {% if product.id in wishlisted_products %}#ef4444{% else %}#94a3b8{% endif %};"></i>
+            </button>
+
+            <div class="img-box" style="height: 220px; padding: 20px; display: flex; align-items: center; justify-content: center; background: #fff;">
+                <a href="{% url 'product_detail' product.id %}" style="display: block; width: 100%; height: 100%;">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.5s;">
+                    {% endif %}
+                </a>
+            </div>
+
+            <div class="card-body" style="padding: 15px; border-top: 1px solid #f8fafc;">
+                <span class="brand-tag" style="font-size: 0.75rem; color: #4a6cf7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">{{ product.brand.name }}</span>
+                <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                    <h4 class="product-title" style="margin: 8px 0; font-size: 1rem; height: 44px; overflow: hidden; line-height: 1.4; color: #1e293b; font-weight: 600;">{{ product.name }}</h4>
+                </a>
+
+                <div style="margin-bottom: 12px;">
+                    <button class="js-share-btn" 
+                            data-title="{{ product.name }}" 
+                            data-url="{% url 'product_detail' product.id %}"
+                            style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+
+                <div class="card-footer" style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    {% if product.is_offer and product.discount_price %}
+                        <span class="price" style="font-weight: 800; font-size: 1.2rem; color: #ef4444;">₹{{ product.discount_price }}</span>
+                        <span class="old-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; font-weight: 500;">₹{{ product.price }}</span>
+                    {% else %}
+                        <span class="price" style="font-weight: 800; font-size: 1.2rem; color: #0f172a;">₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="padding: 0 15px 15px;">
+                {% if product.stock > 0 %}
+                    <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="variant_id" value=""> 
+                        <button type="submit" class="standard-add-btn" style="background: #0f172a; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; transition: 0.3s;">
+                            <i class="fas fa-shopping-cart" style="font-size: 0.85rem;"></i> Add to Cart
+                        </button>
+                    </form>
+                {% else %}
+                    <button class="standard-add-btn" disabled style="background:#f1f5f9; color:#94a3b8; width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700;">Sold Out</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- 1. Share Functionality ---
+        document.querySelectorAll('.js-share-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const title = this.dataset.title;
+                const url = window.location.origin + this.dataset.url;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: 'Check out this product!',
+                        url: url
+                    }).catch(err => console.log("Share failed", err));
+                } else {
+                    navigator.clipboard.writeText(url);
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i> Copied';
+                    setTimeout(() => { this.innerHTML = originalContent; }, 2000);
+                }
+            });
+        });
+
+        // --- 2. AJAX Wishlist ---
+        document.querySelectorAll('.js-wishlist-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const productId = this.dataset.id;
+                const icon = this.querySelector('i');
+                const isActive = this.classList.contains('active');
+                
+                fetch(`/add-to-wishlist/${productId}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(() => {
+                    if (!isActive) {
+                        icon.classList.replace('far', 'fas');
+                        icon.style.color = '#ef4444';
+                        this.classList.add('active');
+                    } else {
+                        icon.classList.replace('fas', 'far');
+                        icon.style.color = '#94a3b8';
+                        this.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

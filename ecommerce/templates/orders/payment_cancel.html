@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 100px auto; text-align: center; padding: 40px;">
+    <div style="color: #dc3545; font-size: 60px; margin-bottom: 20px;">✘</div>
+    <h2 style="color: #333;">Payment Cancelled</h2>
+    <p style="color: #666; margin-bottom: 30px;">The payment process was cancelled or failed.</p>
+    <a href="{% url 'checkout' %}" style="background: #222; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px;">Try Again</a>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP | Standard</title>
+    <link rel="stylesheet" href="{% static 'css/otp.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="main-card">
+        <div class="left-panel">
+            <h1>Security First</h1>
+            <p>We've sent a code to your email to keep your account safe.</p>
+        </div>
+
+        <div class="right-panel">
+            <h2>Verify OTP</h2>
+            <p class="subtitle">Please enter the 6-digit code sent to your inbox.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="messages {{ message.tags }}" style="color: #e74c3c; margin-bottom: 10px; font-size: 0.9rem;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" class="auth-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    {% for field in form %}
+                        <div class="form-field">
+                            {{ field }}
+                            {% if field.errors %}
+                                <small style="color: red;">{{ field.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="submit-btn">VERIFY OTP</button>
+            </form>
+
+            <div class="timer-section" style="margin-top: 20px; font-size: 0.9rem;">
+                <div id="timer-display">
+                    OTP expires in: <span id="time" style="font-weight: 600; color: #e74c3c;">02:00</span>
+                </div>
+                
+                <div id="resend-section" style="display: none;">
+                    Didn't get the code? 
+                    <a href="{% url 'resend_otp' %}" style="text-decoration: none; color: #6a11cb; font-weight: 600;">Resend OTP</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startTimer(duration, display, resendBox, timerBox) {
+            let timer = duration, minutes, seconds;
+            let interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    timerBox.style.display = "none";  // Hide timer
+                    resendBox.style.display = "block"; // Show resend link
+                }
+            }, 1000);
+        }
+
+        window.onload = function () {
+            let twoMinutes = 60 * 2,
+                display = document.querySelector('#time'),
+                resendBox = document.querySelector('#resend-section'),
+                timerBox = document.querySelector('#timer-display');
+            
+            startTimer(twoMinutes, display, resendBox, timerBox);
+        };
+    </script>
+
+</body>
+</html>

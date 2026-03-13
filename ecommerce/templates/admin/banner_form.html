@@ -1,0 +1,118 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+    /* Form Card Styles */
+    .form-wrapper { display: flex; justify-content: center; padding: 20px 0; }
+    .form-card { 
+        background: white; width: 100%; max-width: 650px; 
+        border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        padding: 35px; border: none; 
+    }
+    
+    .form-label { font-weight: 600; color: #333; margin-top: 12px; margin-bottom: 5px; }
+    
+    .btn-submit { 
+        background: #008080; color: white; border: none; padding: 13px; 
+        border-radius: 8px; font-weight: bold; width: 100%; 
+        margin-top: 25px; transition: 0.3s; 
+    }
+    .btn-submit:hover { background: #006666; transform: translateY(-2px); }
+    
+    .btn-cancel { 
+        display: block; text-align: center; color: #6c757d; 
+        text-decoration: none; margin-top: 15px; font-size: 14px; 
+    }
+    
+    /* Image Preview Style */
+    #img-preview { 
+        width: 100%; height: 220px; object-fit: cover; 
+        border-radius: 10px; margin-top: 15px; display: none; 
+        border: 2px dashed #ddd; 
+    }
+    
+    .x-small { font-size: 12px; }
+</style>
+
+<div class="form-wrapper">
+    <div class="form-card">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'order_list' %}" class="text-decoration-none me-3" style="color: #008080;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h3 class="fw-bold mb-0 text-dark">{{ title }}</h3>
+        </div>
+        
+        <p class="text-muted small mb-4">Fill in the details below to manage your banner settings.</p>
+        
+        <form method="POST" enctype="multipart/form-data" id="bannerForm">
+            {% csrf_token %}
+
+            {% for field in form %}
+            {% if field.name != 'title_color' %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                
+                {% if field.name == 'image' %}
+                    <input type="file" name="{{ field.name }}" id="imageInput" class="form-control" onchange="showPreview(event)" {% if not form.instance.pk %}required{% endif %}>
+                    
+                    {% if form.instance.image %}
+                        <div class="mt-2 small text-muted">Current: {{ form.instance.image.name }}</div>
+                        <img id="img-preview" src="{{ form.instance.image.url }}" alt="Preview" style="display: block;">
+                    {% else %}
+                        <img id="img-preview" src="#" alt="Preview">
+                    {% endif %}
+                
+                {% elif field.name == 'expiry_date' %}
+                    <input type="datetime-local" name="{{ field.name }}" id="{{ field.id_for_label }}" 
+                           class="form-control" 
+                           value="{% if field.value %}{{ field.value|date:'Y-m-d\TH:i' }}{% endif %}" required>
+
+                {% elif field.name == 'is_active' %}
+                    <div class="form-check form-switch mt-1">
+                        {{ field }}
+                        <label class="form-check-label text-muted ms-2" style="font-size: 14px;">Active Status</label>
+                    </div>
+
+                {% else %}
+                    {{ field }}
+                {% endif %}
+
+                {% if field.errors %}
+                    <div class="text-danger x-small mt-1">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <button type="submit" class="btn btn-submit">Save Banner</button>
+            <a href="{% url 'order_list' %}" class="btn btn-cancel">Discard and Go Back</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showPreview(event) {
+        if(event.target.files.length > 0){
+            var src = URL.createObjectURL(event.target.files[0]);
+            var preview = document.getElementById("img-preview");
+            preview.src = src;
+            preview.style.display = "block";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('#bannerForm input, #bannerForm select, #bannerForm textarea').forEach(function(el) {
+            if (el.type !== 'checkbox' && el.type !== 'file') {
+                el.classList.add('form-control');
+            }
+            if (el.type === 'checkbox') {
+                el.classList.add('form-check-input');
+            }
+        });
+    });
+</script>
+{% endblock %}

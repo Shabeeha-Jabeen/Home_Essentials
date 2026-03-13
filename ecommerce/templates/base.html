@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>{% block title %}Home | HomeEssentials Quality Appliances{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">Home<span>Essentials</span></a>
+            
+            <div class="nav-links">
+                <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+                <a href="{% url 'offers' %}">Offers</a>
+                <a href="{% url 'category_product_list' %}">Products</a>
+                <a href="{% url 'contact' %}">Contact</a>
+            </div>
+
+            <div class="search-container">
+                <form action="{% url 'product_search' %}" method="GET" class="navbar-search-form">
+                    <input type="text" name="q" placeholder="Search appliances, brands..." value="{{ query|default:'' }}">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+
+            <div class="nav-icons">
+                <a href="{% url 'wishlist_view' %}" title="Wishlist"><i class="far fa-heart"></i></a>
+                <a href="{% url 'cart_view' %}" title="Cart"><i class="fas fa-shopping-cart"></i></a>
+                <a href="{% url 'order_list' %}" title="My Orders"><i class="fas fa-box"></i></a>
+                <a href="{% url 'profile' %}" title="Account"><i class="far fa-user-circle"></i></a>
+
+                {% if user.is_authenticated %}
+                    <span class="user-greeting">Hi, {{ user.first_name|default:user.username|capfirst }}</span>
+                    <form method="post" action="{% url 'account_logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-link">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="login-btn">Login</a>
+                {% endif %}
+            </div>
+            
+            <button class="menu-toggle" id="mobile-menu"><i class="fas fa-bars"></i></button>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h3>HomeEssentials</h3>
+                <p>Quality appliances for a modern lifestyle.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <a href="#">Categories</a>
+                <a href="#">Special Offers</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="#">Track Order</a>
+                <a href="#">Return Policy</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HomeEssentials. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        {% if user.is_authenticated %}
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+            window.onpopstate = function (event) {
+                window.history.pushState(null, null, window.location.href);
+            };
+        {% endif %}
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+
+        const menuBtn = document.getElementById('mobile-menu');
+        const navLinks = document.querySelector('.nav-links');
+        if (menuBtn) {
+            menuBtn.onclick = () => navLinks.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

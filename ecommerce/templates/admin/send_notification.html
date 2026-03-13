@@ -1,0 +1,167 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Send Notification | Admin{% endblock %}
+
+{% block content %}
+<style>
+    /* Form Layout */
+    .form-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        max-width: 750px;
+        margin: 0 auto;
+        border: 1px solid #edf2f7;
+    }
+
+    .form-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f8fafc;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #008080;
+        box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.1);
+    }
+
+    /* Notification Alerts Style */
+    .alert-info-box {
+        background: #f0f9ff;
+        color: #0369a1;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-left: 4px solid #0ea5e9;
+    }
+
+    .btn-dispatch {
+        background: #008080;
+        color: #fff;
+        border: none;
+        padding: 14px 25px;
+        border-radius: 10px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-dispatch:hover {
+        background: #006666;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,128,128,0.2);
+    }
+
+    /* Selection Highlighting */
+    optgroup { font-weight: 700; color: #1a202c; }
+    option { font-weight: 400; padding: 10px; }
+</style>
+
+<div class="header-row" style="margin-bottom: 30px;">
+    <div>
+        <h1 style="font-size: 26px; color: #1a202c; font-weight: 700;">Broadcast Communications</h1>
+        <p style="color: #718096;">Reach your customers instantly via in-app notifications.</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <div class="form-header">
+        <h2 style="font-size: 18px; color: #2d3748;">Compose Notification</h2>
+    </div>
+
+    <div class="alert-info-box">
+        <span style="font-size: 1.2rem;">💡</span>
+        <span>Notifications sent from here will appear in the user's notification center and can trigger push alerts if configured.</span>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Recipient(s)</label>
+            <select name="user_id" class="form-control" required>
+                <option value="all" style="font-weight: 600; color: #008080;">📢 All Active Users (Global Broadcast)</option>
+                <optgroup label="Direct Message (Individual User)">
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }} ({{ user.email|default:"No email" }})</option>
+                    {% endfor %}
+                </optgroup>
+            </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Category</label>
+                <select name="type" class="form-control">
+                    <option value="Promo">🎁 Promotion / Offer</option>
+                    <option value="Account">⚠️ Account Alert</option>
+                    <option value="Order">📦 Order Update</option>
+                    <option value="System">⚙️ System Maintenance</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="normal">Normal</option>
+                    <option value="high">High (Immediate Alert)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Headline / Title</label>
+            <input type="text" name="title" class="form-control" placeholder="Short & catchy title..." required>
+        </div>
+
+        <div class="form-group">
+            <label>Message Detail</label>
+            <textarea name="message" class="form-control" rows="5" placeholder="Describe the notification details here..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-dispatch">
+            <span style="font-size: 1.1rem;">🚀</span> Dispatch Notification
+        </button>
+    </form>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{% url 'admin_notifications_list' %}" style="color: #718096; text-decoration: none; font-size: 14px; font-weight: 500;">
+        <i class="fas fa-history"></i> View Notification Logs
+    </a>
+</div>
+{% endblock %}

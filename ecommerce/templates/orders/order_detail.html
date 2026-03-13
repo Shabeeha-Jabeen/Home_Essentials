@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px;">
+        <h2 style="color: #1e293b; margin: 0;">Order Details</h2>
+        <span style="background: #e2e8f0; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #475569;">#{{ order.id }}</span>
+    </div>
+    
+    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <p style="margin: 5px 0;"><strong>Order Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}</p>
+            <p style="margin: 5px 0;"><strong>Status:</strong> 
+                <span style="color: {% if order.status == 'Delivered' %}#10b981{% elif order.status == 'Cancelled' %}#ef4444{% else %}#2563eb{% endif %}; font-weight: bold;">
+                    {{ order.status }}
+                </span>
+            </p>
+            <p style="margin: 5px 0;"><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+        </div>
+        <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <h4 style="margin-top: 0; color: #334155; margin-bottom: 10px;">Shipping Address:</h4>
+            <p style="margin-bottom: 0; line-height: 1.6; font-size: 14px; color: #64748b;">
+                <strong style="color: #1e293b;">{{ order.full_name }}</strong><br>
+                {{ order.address }}<br>
+                {{ order.city }} - {{ order.pincode }}<br>
+                <strong>Phone:</strong> {{ order.phone }}
+            </p>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 10px; color: #1e293b;">Items Ordered</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align: left; color: #64748b; font-size: 14px; border-bottom: 2px solid #f1f5f9;">
+                <th style="padding: 12px 0;">Product</th>
+                <th style="padding: 12px 0; text-align: center;">Qty</th>
+                <th style="padding: 12px 0; text-align: right;">Price</th>
+                <th style="padding: 12px 0; text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.order_items.all %}
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 15px 0;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        {% if item.product_image %}
+                            <img src="{{ item.product_image.url }}" alt="{{ item.product_name }}" 
+                                 style="width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;">
+                        {% elif item.product and item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" 
+                                 style="width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;">
+                        {% else %}
+                            <div style="width: 65px; height: 65px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; padding: 5px;">
+                                Item<br>Deleted
+                            </div>
+                        {% endif %}
+                        
+                        <div>
+                            <span style="display: block; font-weight: 600; color: #1e293b;">
+                                {% if item.product_name %}{{ item.product_name }}{% elif item.product %}{{ item.product.name }}{% else %}(Product No Longer Available){% endif %}
+                            </span>
+                            
+                            <div style="margin-top: 4px; font-size: 12px;">
+                                {% if item.variant_label %}
+                                    <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 600;">{{ item.variant_label }}</span>
+                                {% endif %}
+                                
+                                {% if item.material_label %}
+                                    <span style="color: #94a3b8; margin-left: 5px;">• {{ item.material_label }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 15px 0; text-align: center; color: #475569;">{{ item.quantity }}</td>
+                <td style="padding: 15px 0; text-align: right; color: #475569;">₹{{ item.price }}</td>
+                <td style="padding: 15px 0; text-align: right; font-weight: 700; color: #1e293b;">
+                    ₹{% widthratio item.price 1 item.quantity %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 30px; text-align: right; padding: 20px; background: #f8fafc; border-radius: 12px;">
+        <div style="font-size: 16px; color: #64748b; margin-bottom: 5px;">Grand Total:</div>
+        <div style="font-size: 32px; font-weight: 800; color: #2563eb;">₹{{ order.total_amount }}</div>
+    </div>
+
+    <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+        <a href="{% url 'order_list' %}" style="color: #2563eb; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; transition: 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to My Orders
+        </a>
+    </div>
+</div>
+{% endblock %}

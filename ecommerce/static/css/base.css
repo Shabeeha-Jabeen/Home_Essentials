@@ -1,0 +1,118 @@
+:root {
+    --primary-blue: #2563eb;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #f3f4f6;
+    --danger: #ef4444;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    margin: 0; 
+    background-color: #fff; 
+    color: var(--text-main); 
+}
+
+/* --- Navbar (Image Style Fix) --- */
+.navbar {
+    background: #ffffff;
+    height: 75px; 
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+.nav-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4%;
+}
+
+.logo { 
+    font-size: 24px; font-weight: 800; color: #1e40af; 
+    text-decoration: none; letter-spacing: -0.5px;
+}
+.logo span { color: var(--primary-blue); }
+
+.nav-links { display: flex; gap: 25px; }
+.nav-links a { 
+    text-decoration: none; color: #4b5563; 
+    font-weight: 500; font-size: 15px; transition: 0.2s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text-main); font-weight: 700; }
+
+.search-container { flex-grow: 1; max-width: 380px; margin: 0 30px; }
+.navbar-search-form {
+    display: flex; background: var(--bg-light); border-radius: 8px;
+    padding: 4px 15px; align-items: center;
+}
+.navbar-search-form input {
+    border: none; background: transparent; outline: none; 
+    padding: 8px; width: 100%; font-size: 14px;
+}
+.navbar-search-form button { border: none; background: transparent; color: #9ca3af; cursor: pointer; }
+
+.nav-icons { display: flex; align-items: center; gap: 20px; }
+.nav-icons a { text-decoration: none; color: #374151; font-size: 19px; position: relative; }
+.nav-icons a:hover i { color: var(--primary-blue); }
+
+.notification-wrapper .badge-count {
+    position: absolute; top: -8px; right: -8px;
+    background-color: var(--danger); color: white;
+    border-radius: 50%; padding: 2px 6px; font-size: 10px;
+    font-weight: 800; border: 2px solid white;
+}
+
+.user-greeting { font-weight: 700; color: #111827; font-size: 14px; margin-left: 5px; }
+.logout-link { 
+    color: var(--danger); font-weight: 600; font-size: 14px; 
+    border: none; background: none; cursor: pointer; margin-left: 10px;
+}
+.login-btn { color: var(--primary-blue); font-weight: 700; text-decoration: none; font-size: 14px; }
+
+.menu-toggle { display: none; font-size: 22px; background: none; border: none; cursor: pointer; }
+
+/* --- Main Content (Banner Overlap Fix) --- */
+main { 
+    min-height: 80vh; 
+    display: block;
+}
+
+/* --- Footer --- */
+footer { background: #111827; color: #9ca3af; padding: 40px 5% 20px; margin-top: 60px; }
+.footer-grid { display: flex; justify-content: space-between; border-bottom: 1px solid #374151; padding-bottom: 30px; margin-bottom: 20px; }
+.footer-col h4 { color: white; margin-bottom: 15px; }
+.footer-col a { color: #9ca3af; text-decoration: none; display: block; margin-bottom: 8px; font-size: 14px; }
+.footer-bottom { text-align: center; font-size: 13px; }
+
+/* Mobile View Adjustments */
+@media (max-width: 1100px) {
+    .nav-links {
+        display: none; /* Mobile menu default hidden */
+    }
+    .nav-links.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 75px;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    .search-container, .user-greeting { display: none; }
+    .menu-toggle { display: block; }
+}

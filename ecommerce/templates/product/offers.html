@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Special Offers | HomeEssentials{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/offers.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --dark-slate: #1e293b;
+        --danger-red: #ef4444;
+        --success-green: #10b981;
+    }
+
+    .product-card { 
+        border: 1px solid #e2e8f0; 
+        border-radius: 16px; 
+        overflow: hidden; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        background: white; 
+        position: relative; 
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+    .product-card:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+    }
+
+    .add-btn {
+        background-color: var(--dark-slate); color: white; border: none; padding: 14px 20px;
+        font-size: 0.95rem; font-weight: 700; border-radius: 10px; cursor: pointer;
+        width: 100%; transition: all 0.3s ease;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .add-btn:hover:not([disabled]) { background-color: var(--primary-blue); }
+    .add-btn:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+    .prices { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    .old-price { color: #94a3b8; text-decoration: line-through; font-size: 0.95rem; font-weight: 500; }
+    .new-price { color: var(--danger-red); font-weight: 900; font-size: 1.4rem; }
+
+    .offer-tag {
+        position: absolute; top: 0; left: 0; background: var(--danger-red);
+        color: white; padding: 7px 15px; border-radius: 0 0 15px 0;
+        font-weight: 800; z-index: 10; font-size: 0.85rem;
+        box-shadow: 2px 2px 10px rgba(239, 68, 68, 0.3);
+        display: flex; align-items: center; gap: 5px;
+    }
+
+    /* Savings badge styling */
+    .save-badge {
+        background: #fef2f2; color: var(--danger-red); font-size: 0.75rem;
+        padding: 2px 8px; border-radius: 4px; font-weight: 700; border: 1px dashed var(--danger-red);
+    }
+
+    .share-wrapper { position: relative; display: inline-block; }
+    .share-popup {
+        display: none; position: absolute; bottom: 40px; right: -10px;
+        background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15); z-index: 100; min-width: 150px;
+        animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .share-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; text-decoration: none; font-size: 13px; font-weight: 600; color: #475569; transition: 0.2s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+    .share-item:hover { background: #f8fafc; color: var(--primary-blue); }
+
+    .wishlist-btn-offer { position: absolute; right: 12px; top: 12px; z-index: 2; border: none; background: transparent; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="offers-container">
+    {% if banner %}
+    <section class="offer-banner" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ banner.image.url }}') no-repeat center center/cover; height: 450px; display: flex; align-items: center; justify-content: center; color: white; text-align: center; border-radius: 0 0 40px 40px; margin-bottom: 40px;">
+        <div class="banner-content" style="max-width: 800px; padding: 0 20px;">
+            <span class="tag" style="background: var(--danger-red); padding: 6px 18px; border-radius: 50px; font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">🔥 Limited Time Deal</span>
+            <h1 style="font-size: 3.5rem; margin: 20px 0; font-weight: 900; line-height: 1.1;">{{ banner.title }}</h1>
+            <p style="font-size: 1.25rem; margin-bottom: 30px; opacity: 0.9;">{{ banner.subtitle }}</p>
+            <div class="timer" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 15px; display: inline-block; font-size: 1.2rem; border: 1px solid rgba(255,255,255,0.2);">
+                Ends in: <strong id="flash-countdown" style="font-family: monospace; color: #fff;">00:00:00</strong>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h2 style="font-size: 2.5rem; color: var(--dark-slate); font-weight: 800;">Exclusive Deals</h2>
+        <div style="width: 60px; height: 4px; background: var(--primary-blue); margin: 15px auto; border-radius: 2px;"></div>
+        <p style="color: #64748b; font-size: 1.1rem;">Premium essentials at unbeatable prices.</p>
+    </div>
+
+    <section id="shop-now" class="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 0 5% 80px;">
+    {% for product in products %}
+    <div class="product-card">
+        {% if product.discount_percentage > 0 and product.stock > 0 %}
+            <div class="offer-tag">
+                <i class="fas fa-bolt"></i> {{ product.discount_percentage }}% OFF
+            </div>
+        {% endif %}
+
+        <form action="{% url 'add_to_wishlist' product.id %}" method="POST" class="wishlist-btn-offer">
+            {% csrf_token %}
+            <button type="submit" style="background: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;">
+                <i class="fa{% if product.id in wishlist_product_ids %}s{% else %}r{% endif %} fa-heart" 
+                   style="color: {% if product.id in wishlist_product_ids %}#ef4444{% else %}#94a3b8{% endif %}; font-size: 1.1rem;"></i>
+            </button>
+        </form>
+
+        <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit; flex-grow: 1;">
+            <div style="height: 280px; display: flex; align-items: center; justify-content: center; padding: 30px; overflow: hidden; position: relative; background: #fcfcfc;">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain; transition: transform 0.5s ease; {% if product.stock < 1 %}opacity: 0.4; grayscale(1);{% endif %}" class="product-img">
+                
+                {% if product.stock < 1 %}
+                <div style="position: absolute; background: var(--dark-slate); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Sold Out</div>
+                {% endif %}
+            </div>
+            
+            <div style="padding: 20px; text-align: center;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--dark-slate); height: 2.8em; overflow: hidden; font-weight: 700; line-height: 1.4;">{{ product.name }}</h3>
+                
+                <div class="prices">
+                    {% if product.discount_price %}
+                        <span class="new-price">₹{{ product.discount_price }}</span>
+                        <span class="old-price">₹{{ product.price }}</span>
+                    {% else %}
+                        <span class="new-price">₹{{ product.price }}</span>
+                    {% endif %}
+                    
+                    <div class="share-wrapper">
+                        <button type="button" onclick="toggleOfferShare(event, 'share-{{ product.id }}')" style="background:none; border:none; cursor:pointer; color:#cbd5e1; padding:5px;">
+                            <i class="fas fa-share-nodes"></i>
+                        </button>
+                        <div id="share-{{ product.id }}" class="share-popup">
+                            <a href="https://api.whatsapp.com/send?text=Great Deal! {{ product.name }}: {{ request.scheme }}://{{ request.get_host }}{% url 'product_detail' product.id %}" target="_blank" class="share-item" style="color: #25d366;">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                            <button type="button" onclick="copyOfferLink(event, '{{ request.scheme }}://{{ request.get_host }}{% url 'product_detail' product.id %}')" class="share-item">
+                                <i class="fas fa-link"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <div class="action-area" style="padding: 0 20px 25px;">
+            {% if product.stock > 0 %}
+                <form action="{% url 'add_to_cart' product.id %}" method="POST" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="add-btn">
+                        <i class="fas fa-shopping-basket"></i> Add to Cart
+                    </button>
+                </form>
+            {% else %}
+                <button class="add-btn" disabled>Out of Stock</button>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 120px 0; color: #94a3b8;">
+            <i class="fas fa-tags" style="font-size: 4rem; margin-bottom: 25px; opacity: 0.2;"></i>
+            <h3 style="color: var(--dark-slate); font-weight: 700;">No Active Offers</h3>
+            <p>Check back later for exclusive deals!</p>
+        </div>
+    {% endfor %}
+    </section>
+</div>
+
+<script>
+    // 1. Countdown Logic
+    {% if banner %}
+    const expiryDate = new Date("{{ banner.expiry_date|date:'Y-m-d H:i:s' }}").getTime();
+    const timerInterval = setInterval(function() {
+        const now = new Date().getTime();
+        const timeLeft = expiryDate - now;
+        if (timeLeft < 0) {
+            clearInterval(timerInterval);
+            document.getElementById("flash-countdown").innerHTML = "EXPIRED";
+            return;
+        }
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        document.getElementById("flash-countdown").innerHTML = 
+            (hours < 10 ? "0"+hours : hours) + ":" + 
+            (minutes < 10 ? "0"+minutes : minutes) + ":" + 
+            (seconds < 10 ? "0"+seconds : seconds);
+    }, 1000);
+    {% endif %}
+
+    // 2. JS Functions
+    function toggleOfferShare(event, id) {
+        event.preventDefault(); event.stopPropagation();
+        const menu = document.getElementById(id);
+        const isOpen = menu.style.display === 'block';
+        document.querySelectorAll('.share-popup').forEach(m => m.style.display = 'none');
+        menu.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function copyOfferLink(event, link) {
+        event.preventDefault(); event.stopPropagation();
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Link copied!");
+            document.querySelectorAll('.share-popup').forEach(m => m.style.display = 'none');
+        });
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.share-popup').forEach(m => m.style.display = 'none');
+    });
+</script>
+{% endblock %}

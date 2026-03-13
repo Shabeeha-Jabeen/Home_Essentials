@@ -1,0 +1,37 @@
+{% extends 'admin/base_admin.html' %}
+{% block content %}
+<header class="header-row">
+    <div>
+        <h1>Add New Category</h1>
+        <p>Create a new category for your products</p>
+    </div>
+    <a href="{% url 'category_list' %}" style="color: #718096; text-decoration: none; font-weight: 500;">⬅ Back to List</a>
+</header>
+
+<div class="form-card" style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); max-width: 600px; margin-top: 20px;">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #4a5568;">Category Name</label>
+            <input type="text" name="name" required placeholder="Enter category name"
+                   style="width: 100%; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #4a5568;">Category Image</label>
+            <input type="file" name="image" required accept="image/*"
+                   style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafb;">
+        </div>
+
+        <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 12px;">
+            <input type="checkbox" name="is_active" id="active" style="width: 18px; height: 18px; accent-color: #008080;" checked>
+            <label for="active" style="font-weight: 600; color: #4a5568; cursor: pointer;">Active Status</label>
+        </div>
+
+        <button type="submit" style="background: #008080; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%;">
+            Save Category
+        </button>
+    </form>
+</div>
+{% endblock %}

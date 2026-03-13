@@ -1,0 +1,213 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Inventory Settings | AdminPanel{% endblock %}
+
+{% block content %}
+<style>
+    /* Tabs Styling */
+    .tabs-header { display: flex; gap: 30px; margin-bottom: 25px; border-bottom: 2px solid #edf2f7; overflow-x: auto; scrollbar-width: none; }
+    .tabs-header::-webkit-scrollbar { display: none; }
+    
+    .tab-btn { 
+        padding: 12px 5px; cursor: pointer; border: none; background: none; 
+        font-weight: 600; color: #a0aec0; border-bottom: 3px solid transparent; transition: 0.3s;
+        white-space: nowrap;
+    }
+    .tab-btn.active { color: #008080; border-bottom-color: #008080; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.4s; }
+
+    /* Action Buttons */
+    .btn-add { background: #008080; color: white !important; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: 0.2s; }
+    .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* Table Improvements */
+    .table-container { background: white; border-radius: 15px; border: 1px solid #edf2f7; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; background: #fbfcfd; padding: 18px 20px; color: #a0aec0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 18px 20px; border-bottom: 1px solid #f7fafc; color: #2d3748; font-size: 14px; }
+    
+    .action-icon { padding: 6px 10px; border-radius: 6px; text-decoration: none; transition: 0.3s; font-size: 14px; }
+    .edit-icon { background: #f0fff4; color: #2f855a; margin-right: 5px; }
+    .delete-icon { background: #fff5f5; color: #c53030; }
+    .edit-icon:hover { background: #2f855a; color: white; }
+    .delete-icon:hover { background: #c53030; color: white; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<header class="header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div>
+        <h1 style="font-size: 28px; color: #1a1c23; font-weight: 700;">Inventory Settings</h1>
+        <p style="color: #718096;">Manage categories, sub-levels, and materials</p>
+    </div>
+    <div class="action-btns" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{% url 'add_category' %}" class="btn-add">+ Main</a>
+        <a href="{% url 'add_subcategory' %}" class="btn-add" style="background: #2d3748;">+ Sub</a>
+        <a href="{% url 'add_nested_category' %}" class="btn-add" style="background: #4a5568;">+ Nested</a>
+        <a href="{% url 'add_material' %}" class="btn-add" style="background: #718096;">+ Material</a>
+    </div>
+</header>
+
+{% if search_query %}
+<div style="margin-bottom: 20px; padding: 12px 18px; background: #e6fffa; border: 1px solid #b2f5ea; border-radius: 10px; color: #2c7a7b; display: flex; justify-content: space-between; align-items: center;">
+    <span>🔍 Results for: <strong>"{{ search_query }}"</strong></span>
+    <a href="{% url 'category_list' %}" style="color: #e53e3e; font-size: 12px; font-weight: bold; text-decoration: none;">✕ Clear Search</a>
+</div>
+{% endif %}
+
+<div class="tabs-header">
+    <button class="tab-btn active" id="btn-main" onclick="showTab('main-tab', this)">Main Categories ({{ categories.count }})</button>
+    <button class="tab-btn" id="btn-sub" onclick="showTab('sub-tab', this)">Sub Categories ({{ subcategories.count }})</button>
+    <button class="tab-btn" id="btn-nested" onclick="showTab('nested-tab', this)">Nested Categories ({{ nested_categories.count|default:0 }})</button>
+    <button class="tab-btn" id="btn-material" onclick="showTab('material-tab', this)">Materials ({{ materials.count|default:0 }})</button>
+</div>
+
+<div id="main-tab" class="tab-pane active">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>IMG</th>
+                    <th>NAME</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td>
+                        {% if cat.image %}
+                        <img src="{{ cat.image.url }}" width="40" height="40" style="border-radius: 8px; object-fit: cover;">
+                        {% else %}
+                        <div style="width: 40px; height: 40px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">📦</div>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 600;">{{ cat.name }}</td>
+                    <td><span style="color: {% if cat.is_active %}#38a169{% else %}#e53e3e{% endif %};">●</span> {{ cat.is_active|yesno:"Active,Inactive" }}</td>
+                    <td>
+                        <a href="{% url 'edit_category' cat.pk %}" class="action-icon edit-icon">Edit</a>
+                        <a href="{% url 'delete_category' cat.pk %}" class="action-icon delete-icon" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align: center; padding: 60px; color: #a0aec0;">No Main Categories found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="sub-tab" class="tab-pane">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>PARENT CATEGORY</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subcategories %}
+                <tr>
+                    <td style="font-weight: 600;">{{ sub.name }}</td>
+                    <td>{{ sub.category.name }}</td>
+                    <td>
+                        <a href="{% url 'edit_subcategory' sub.pk %}" class="action-icon edit-icon">Edit</a>
+                        <a href="{% url 'delete_subcategory' sub.pk %}" class="action-icon delete-icon" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; padding: 60px; color: #a0aec0;">No Sub Categories found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="nested-tab" class="tab-pane">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>NAME</th>
+                    <th>SUB CATEGORY (PARENT)</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nest in nested_categories %}
+                <tr>
+                    <td style="font-weight: 600;">{{ nest.name }}</td>
+                    <td>{{ nest.subcategory.name }}</td>
+                    <td>
+                        <a href="{% url 'edit_nested_category' nest.pk %}" class="action-icon edit-icon">Edit</a>
+                        <a href="{% url 'delete_nested_category' nest.pk %}" class="action-icon delete-icon" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; padding: 60px; color: #a0aec0;">No Nested Categories found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="material-tab" class="tab-pane">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>MATERIAL NAME</th>
+                    <th>ID</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mat in materials %}
+                <tr>
+                    <td style="font-weight: 600;">{{ mat.name }}</td>
+                    <td style="color: #a0aec0; font-size: 12px;">#{{ mat.id }}</td>
+                    <td>
+                        <a href="{% url 'update_material' mat.pk %}" class="action-icon edit-icon">Edit</a>
+                        <a href="{% url 'delete_material' mat.pk %}" class="action-icon delete-icon" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; padding: 60px; color: #a0aec0;">No Materials found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function showTab(tabId, btn) {
+        document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        if(btn) btn.classList.add('active');
+    }
+
+    // Auto-switch tab if search results are only in one specific tab
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('search')) {
+            const mainCount = {{ categories.count }};
+            const subCount = {{ subcategories.count }};
+            const nestedCount = {{ nested_categories.count|default:0 }};
+            const matCount = {{ materials.count|default:0 }};
+
+            if (mainCount === 0) {
+                if (subCount > 0) showTab('sub-tab', document.getElementById('btn-sub'));
+                else if (nestedCount > 0) showTab('nested-tab', document.getElementById('btn-nested'));
+                else if (matCount > 0) showTab('material-tab', document.getElementById('btn-material'));
+            }
+        }
+    });
+</script>
+{% endblock %}

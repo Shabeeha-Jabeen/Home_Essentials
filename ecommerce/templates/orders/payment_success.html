@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; padding: 20px; font-family: 'Inter', sans-serif;">
+    
+    <div id="payment-card" style="background: white; padding: 45px 35px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 500px; width: 100%; text-align: center; transform: translateY(30px); opacity: 0; transition: all 0.8s ease-out;">
+        
+        <div class="success-icon" style="width: 80px; height: 80px; background: #dcfce7; color: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 25px;">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <h2 style="color: #111827; font-size: 28px; font-weight: 800; margin-bottom: 10px;">Payment Successful!</h2>
+        <p style="color: #6b7280; font-size: 16px; margin-bottom: 30px;">Your transaction was completed successfully. We've started processing your order.</p>
+        
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #94a3b8; font-size: 14px; font-weight: 500;">Status</span>
+                <span style="color: #22c55e; font-size: 14px; font-weight: 700;">Completed</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #94a3b8; font-size: 14px; font-weight: 500;">Order ID</span>
+                <span style="color: #1e293b; font-size: 14px; font-weight: 700;">#{{ order.id|default:"12345" }}</span>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="/" style="background: #111827; color: #fff; padding: 15px; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 15px; transition: 0.3s;" onmouseover="this.style.background='#1f2937'" onmouseout="this.style.background='#111827'">
+                Continue Shopping
+            </a>
+            <a href="{% url 'order_list' %}" style="background: transparent; color: #4b5563; padding: 15px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1.5px solid #e5e7eb; transition: 0.3s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                View Order Status
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    .success-icon {
+        animation: pulse 2s infinite;
+    }
+</style>
+
+<script>
+    window.onload = function() {
+        // Show Card
+        const card = document.getElementById('payment-card');
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+
+        // Confetti Burst
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#22c55e', '#3b82f6', '#111827']
+        });
+    };
+</script>
+{% endblock %}

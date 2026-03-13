@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    :root {
+        --primary-blue: #4a6cf7;
+        --dark-bg: #1e293b;
+        --light-slate: #f1f5f9;
+        --text-muted: #64748b;
+        --star-color: #ffc107;
+        --danger-red: #ef4444;
+    }
+
+    /* Variant Selection Buttons */
+    .variant-btn {
+        padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px;
+        background: white; cursor: pointer; transition: 0.3s; font-weight: 600;
+    }
+    .variant-btn.active {
+        border-color: var(--primary-blue); background: #f0f4ff; color: var(--primary-blue);
+        box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.1);
+    }
+    
+    /* Wishlist Button Active State */
+    .wishlist-detail-btn.active {
+        background: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #ef4444 !important;
+    }
+
+    /* Star Rating Interaction */
+    .star-rating-input { 
+        display: flex; 
+        flex-direction: row-reverse; 
+        justify-content: flex-end; 
+        gap: 12px; 
+    }
+    .star-rating-input input { display: none; }
+    .star-rating-input label { 
+        font-size: 32px; 
+        color: #cbd5e1; 
+        cursor: pointer; 
+        transition: 0.2s; 
+    }
+    .star-rating-input input:checked ~ label,
+    .star-rating-input label:hover,
+    .star-rating-input label:hover ~ label { 
+        color: var(--star-color); 
+    }
+
+    .brand-badge {
+        background: #eef2ff; color: #4338ca; padding: 5px 14px;
+        border-radius: 20px; font-size: 11px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.8px; display: inline-block;
+        border: 1px solid #e0e7ff;
+    }
+
+    .review-card { border-bottom: 1px solid #f1f5f9; padding: 20px 0; }
+    
+    /* Price Styling */
+    .old-price-detail { color: #94a3b8; text-decoration: line-through; font-size: 1.2rem; margin-left: 10px; font-weight: 500; }
+    .offer-badge-detail { background: #fef2f2; color: var(--danger-red); padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; border: 1px solid #fee2e2; margin-left: 10px; }
+</style>
+
+<div style="padding: 40px 0; background-color: #f8fafc;">
+    <div class="container" style="max-width: 1200px; margin: auto; padding: 0 20px;">
+        
+        <nav style="margin-bottom: 25px; font-size: 14px; color: #64748b;">
+            <a href="/" style="text-decoration: none; color: inherit;">Home</a> > 
+            {% if product.subcategory %}
+                <a href="{% url 'category_product_list' %}?subcategory={{ product.subcategory.id }}" style="text-decoration: none; color: inherit;">{{ product.subcategory.name }}</a>
+            {% endif %} > 
+            <b style="color: #1e293b;">{{ product.name }}</b>
+        </nav>
+
+        <div class="detail-card" style="background: #fff; border-radius: 24px; display: flex; flex-wrap: wrap; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 40px;">
+            
+            <div class="gallery-box" style="flex: 1; min-width: 350px; padding: 50px; border-right: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 100%; height: 450px; display: flex; align-items: center; justify-content: center;">
+                    <img id="mainImg" src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </div>
+            </div>
+
+            <div class="info-box" style="flex: 1.2; min-width: 300px; padding: 50px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        {% if product.brand %}
+                        <div class="brand-badge" style="margin-bottom: 15px;">{{ product.brand.name }}</div>
+                        {% endif %}
+                        <h1 style="font-size: 36px; margin: 0 0 12px; color: #0f172a; font-weight: 800; line-height: 1.2;">{{ product.name }}</h1>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--star-color); font-weight: 700;"><i class="fas fa-star"></i> {{ product.average_rating|default:"0" }}</span>
+                            <span style="color: #94a3b8; font-size: 14px;">({{ product.reviews.count }} Customer Ratings)</span>
+                        </div>
+                    </div>
+                    
+                    <button class="js-share-btn" data-title="{{ product.name }}" data-url="{% url 'product_detail' product.id %}"
+                            style="background: #f1f5f9; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 30px 0;">
+
+                <div class="price-box">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                        {% if product.is_offer and product.discount_price %}
+                            <span id="display-price" style="font-size: 40px; font-weight: 900; color: var(--danger-red);">₹{{ product.discount_price }}</span>
+                            <span class="old-price-detail">₹{{ product.price }}</span>
+                            {% if product.discount_percentage %}
+                                <span class="offer-badge-detail">{{ product.discount_percentage }}% OFF</span>
+                            {% endif %}
+                        {% else %}
+                            <span id="display-price" style="font-size: 40px; font-weight: 900; color: #0f172a;">₹{{ product.price }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p id="display-stock" style="margin-top: 12px; font-weight: 700; color: #10b981; font-size: 15px;">
+                        {% if product.stock > 0 %}<i class="fas fa-check-circle"></i> In Stock{% else %}<i class="fas fa-times-circle"></i> Out of Stock{% endif %}
+                    </p>
+                </div>
+
+                {% if product.variants.all %}
+                <div style="margin-top: 35px;">
+                    <h3 style="font-size: 13px; text-transform: uppercase; color: #94a3b8; margin-bottom: 15px; font-weight: 800; letter-spacing: 0.5px;">Choose Variant</h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        {% for variant in product.variants.all %}
+                        <button type="button" class="variant-btn {% if forloop.first %}active{% endif %}" 
+                                data-price="{{ variant.price }}" data-stock="{{ variant.stock }}" data-id="{{ variant.id }}"
+                                onclick="selectVariant(this)">
+                            {{ variant.size_or_volume }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="margin-top: 40px; display: flex; gap: 15px;">
+                    <form id="addToCartForm" action="{% url 'add_to_cart' product.id %}" method="POST" style="flex: 1;">
+                        {% csrf_token %}
+                        <input type="hidden" name="variant_id" id="selectedVariantId" value="">
+                        <button type="submit" id="cartBtn" style="width: 100%; height: 60px; background: #0f172a; color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                            <i class="fas fa-shopping-bag"></i> Add to Cart
+                        </button>
+                    </form>
+
+                    <button class="wishlist-detail-btn js-wishlist-detail {% if product.id in wishlisted_products %}active{% endif %}" 
+                            data-id="{{ product.id }}"
+                            style="width: 60px; height: 60px; border: 1.5px solid #e2e8f0; border-radius: 14px; background: white; cursor: pointer; transition: 0.3s;">
+                        <i class="{% if product.id in wishlisted_products %}fas{% else %}far{% endif %} fa-heart" style="font-size: 1.4rem;"></i>
+                    </button>
+                </div>
+
+                <div style="margin-top: 45px; border-top: 1px solid #f1f5f9; padding-top: 30px;">
+                    <h3 style="font-size: 18px; margin-bottom: 12px; font-weight: 800; color: #0f172a;">Description</h3>
+                    <p style="color: #64748b; line-height: 1.8; font-size: 15px; margin: 0;">{{ product.description|linebreaksbr }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #fff; border-radius: 24px; padding: 45px; box-shadow: 0 10px 40px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+                <h3 style="font-size: 26px; font-weight: 800; color: #0f172a;">Ratings & Reviews</h3>
+                <button onclick="document.getElementById('reviewFormBox').style.display='block'; this.style.display='none'" 
+                        style="background: var(--primary-blue); color: white; border: none; padding: 14px 30px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">
+                    Rate Product
+                </button>
+            </div>
+
+            <div id="reviewFormBox" style="display: none; border: 2px solid #f1f5f9; padding: 35px; border-radius: 20px; margin-bottom: 45px;">
+                <h4 style="margin-bottom: 25px; font-weight: 800; font-size: 20px;">Share Your Thoughts</h4>
+                <form action="{% url 'add_review' product.id %}" method="POST">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 30px;">
+                        <p style="margin-bottom: 12px; font-weight: 700; color: #475569;">Your Rating (Required)</p>
+                        <div class="star-rating-input">
+                            <input type="radio" name="rating" value="5" id="s5" required><label for="s5" class="fas fa-star"></label>
+                            <input type="radio" name="rating" value="4" id="s4"><label for="s4" class="fas fa-star"></label>
+                            <input type="radio" name="rating" value="3" id="s3"><label for="s3" class="fas fa-star"></label>
+                            <input type="radio" name="rating" value="2" id="s2"><label for="s2" class="fas fa-star"></label>
+                            <input type="radio" name="rating" value="1" id="s1"><label for="s1" class="fas fa-star"></label>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <p style="margin-bottom: 12px; font-weight: 700; color: #475569;">Write Review (Optional)</p>
+                        <textarea name="comment" placeholder="Tell us about the quality, delivery etc..." 
+                                  style="width: 100%; padding: 20px; border: 1.5px solid #e2e8f0; border-radius: 14px; height: 130px; outline: none; font-family: inherit; font-size: 16px;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <button type="submit" style="background: #0f172a; color: #fff; border: none; padding: 16px 45px; border-radius: 12px; font-weight: 700; cursor: pointer;">Submit Now</button>
+                        <button type="button" onclick="location.reload()" style="background: #f1f5f9; border: none; padding: 16px 30px; border-radius: 12px; font-weight: 600; cursor: pointer;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="reviews-list">
+                {% for review in product.reviews.all %}
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="margin-bottom: 8px;">
+                            <b style="font-size: 17px; color: #0f172a;">{{ review.user.username|capfirst }}</b>
+                            <div style="color: var(--star-color); font-size: 12px; margin-top: 5px;">
+                                {% for i in "12345"|make_list %}
+                                    <i class="{% if forloop.counter <= review.rating %}fas{% else %}far{% endif %} fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">{{ review.created_at|date:"d M, Y" }}</span>
+                    </div>
+                    {% if review.comment %}
+                    <p style="color: #475569; line-height: 1.7; margin-top: 10px; font-size: 15px;">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 40px 0;">
+                    <p style="color: #94a3b8; font-size: 16px;">No ratings yet. Be the first to rate this product!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function selectVariant(el) {
+        document.querySelectorAll('.variant-btn').forEach(btn => btn.classList.remove('active'));
+        el.classList.add('active');
+
+        const price = el.getAttribute('data-price');
+        const stock = parseInt(el.getAttribute('data-stock'));
+        const variantId = el.getAttribute('data-id');
+
+        // Note: If you have discount_price in variants too, fetch it here
+        document.getElementById('display-price').innerText = '₹' + price;
+        document.getElementById('selectedVariantId').value = variantId;
+
+        const stockLabel = document.getElementById('display-stock');
+        const cartBtn = document.getElementById('cartBtn');
+
+        if (stock > 0) {
+            stockLabel.innerHTML = '<i class="fas fa-check-circle"></i> In Stock (' + stock + ')';
+            stockLabel.style.color = '#10b981';
+            cartBtn.disabled = false;
+            cartBtn.style.opacity = '1';
+        } else {
+            stockLabel.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+            stockLabel.style.color = '#ef4444';
+            cartBtn.disabled = true;
+            cartBtn.style.opacity = '0.5';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstVariant = document.querySelector('.variant-btn');
+        if (firstVariant) firstVariant.click();
+
+        const wishlistBtn = document.querySelector('.js-wishlist-detail');
+        if (wishlistBtn) {
+            wishlistBtn.addEventListener('click', function() {
+                const productId = this.dataset.id;
+                const icon = this.querySelector('i');
+                const isActive = this.classList.contains('active');
+
+                fetch(`/add-to-wishlist/${productId}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(res => {
+                    if (res.ok) {
+                        if (!isActive) {
+                            this.classList.add('active');
+                            icon.className = 'fas fa-heart';
+                        } else {
+                            this.classList.remove('active');
+                            icon.className = 'far fa-heart';
+                        }
+                    }
+                });
+            });
+        }
+
+        const shareBtn = document.querySelector('.js-share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                const title = this.dataset.title;
+                const url = window.location.origin + this.dataset.url;
+                if (navigator.share) {
+                    navigator.share({ title: title, text: 'Check out this product!', url: url });
+                } else {
+                    navigator.clipboard.writeText(url);
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

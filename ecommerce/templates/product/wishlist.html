@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .wishlist-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+    .wishlist-header { border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 30px; }
+    .wishlist-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .item-info { display: flex; align-items: center; gap: 20px; flex: 1; }
+    .item-info img { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; background: #f8fafc; }
+    .btn-move-cart { background: #2563eb; color: #fff; border: none; padding: 12px 24px; border-radius: 25px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 14px; }
+    .btn-move-cart:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .btn-remove { background: #fff; color: #ef4444; border: 1px solid #fee2e2; padding: 11px 18px; border-radius: 25px; text-decoration: none; }
+</style>
+
+<div class="wishlist-container">
+    <div class="wishlist-header"><h1>Your Wishlist ({{ wishlist_items.count }})</h1></div>
+    {% for item in wishlist_items %}
+    <div class="wishlist-item">
+        <div class="item-info">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="{% if item.product.stock < 1 %}opacity: 0.5; grayscale(1);{% endif %}">
+            <div class="item-details">
+                <h3>{{ item.product.name }}</h3>
+                <p class="item-price">₹{{ item.product.discount_price|default:item.product.price }}</p>
+                {% if item.product.stock < 1 %}<span style="color: #ef4444; font-size: 12px; font-weight: bold;">SOLD OUT</span>{% endif %}
+            </div>
+        </div>
+        <div class="action-btns" style="display: flex; gap: 10px; align-items: center;">
+            {% if item.product.stock > 0 %}
+            <a href="{% url 'move_to_cart' item.id %}" class="btn-move-cart">Move to Cart</a>
+            {% else %}
+            <button class="btn-move-cart" disabled>Sold Out</button>
+            {% endif %}
+            <a href="{% url 'remove_from_wishlist' item.id %}" class="btn-remove">Remove</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 80px;"><h2>Your wishlist is empty!</h2><a href="/" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#222; color:white; border-radius:5px; text-decoration:none;">Shop Now</a></div>
+    {% endfor %}
+</div>
+{% endblock %}

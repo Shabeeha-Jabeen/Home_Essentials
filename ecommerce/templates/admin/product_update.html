@@ -1,0 +1,275 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Update Product | Admin{% endblock %}
+
+{% block content %}
+<style>
+    .form-card { 
+        background: white; padding: 30px; border-radius: 15px; 
+        border: 1px solid #edf2f7; box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+        max-width: 950px; margin: auto; 
+    }
+    .form-title { 
+        font-size: 24px; color: #1a1c23; margin-bottom: 25px; 
+        font-weight: 700; border-bottom: 2px solid #f1f5f9; 
+        padding-bottom: 15px; display: flex; align-items: center; gap: 10px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+    label { display: block; font-weight: 600; color: #4a5568; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; }
+    input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; transition: 0.3s; font-size: 14px; }
+    input:focus, select:focus { border-color: #008080; box-shadow: 0 0 0 3px rgba(0,128,128,0.1); }
+
+    .variant-section { 
+        background: #f8fafc; padding: 25px; border-radius: 12px; 
+        border: 1px solid #e2e8f0; margin: 25px 0; 
+    }
+    .variant-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .variant-table th { font-size: 11px; color: #718096; text-align: left; padding: 10px; text-transform: uppercase; }
+    .variant-table td { padding: 8px; }
+    
+    .btn-add-variant { 
+        background: #3182ce; color: white; border: none; padding: 10px 20px; 
+        border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 13px;
+    }
+    .btn-remove-variant { background: #feb2b2; color: #9b2c2c; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+    .image-upload-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed #cbd5e1; }
+    .preview-box { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #e2e8f0; }
+    .checkbox-group { display: flex; gap: 30px; margin: 20px 0; padding: 15px; background: #f0f9f9; border-radius: 8px; border: 1px solid #ccf2f2; }
+    .btn-submit { background: #008080; color: white; border: none; padding: 14px 40px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .btn-submit:hover { background: #006666; transform: translateY(-1px); }
+</style>
+
+<div class="form-card">
+    <h2 class="form-title">
+        <a href="{% url 'product_list' %}" style="text-decoration: none; color: #008080;">←</a>
+        <span>🛠️ Update Product: {{ product.name }}</span>
+    </h2>
+    
+    <form method="POST" enctype="multipart/form-data" id="productForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" name="name" value="{{ product.name }}" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Brand</label>
+                <select name="brand">
+                    <option value="">---------</option> 
+                    {% for b in brands %}
+                        <option value="{{ b.id }}" {% if product.brand and b.id == product.brand.id %}selected{% endif %}>{{ b.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Material</label>
+                <select name="material">
+                    <option value="">---------</option>
+                    {% for m in materials %}
+                        <option value="{{ m.id }}" {% if product.material and m.id == product.material.id %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Main Category *</label>
+                <select name="category" id="id_category" required>
+                    <option value="">---------</option>
+                    {% for c in categories %}
+                        <option value="{{ c.id }}" {% if product.category and c.id == product.category.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sub Category *</label>
+                <select name="subcategory" id="id_subcategory" required>
+                    <option value="">---------</option> 
+                    {% for s in subcategories %}
+                        <option value="{{ s.id }}" data-cat="{{ s.category.id }}" {% if product.subcategory and s.id == product.subcategory.id %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nested Category</label>
+                <select name="nested_category" id="id_nested_category">
+                    <option value="">---------</option>
+                    {% for n in nested_categories %}
+                        <option value="{{ n.id }}" data-sub="{{ n.subcategory.id }}" {% if product.nested_category and n.id == product.nested_category.id %}selected{% endif %}>{{ n.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Base Price (₹) *</label>
+                <input type="number" name="price" id="price" value="{{ product.price }}" required step="0.01">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Total Stock *</label>
+                <input type="number" name="stock" value="{{ product.stock }}" required>
+            </div>
+        </div>
+
+        <div class="variant-section">
+            <label style="color: #2d3748; font-size: 13px;">Manage Variants (Size / Price / Stock)</label>
+            <table class="variant-table" id="variantTable">
+                <thead>
+                    <tr>
+                        <th>Size/Volume</th>
+                        <th>Price (₹)</th>
+                        <th>Stock</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for variant in product.variants.all %}
+                    <tr>
+                        <td><input type="text" name="variant_size[]" value="{{ variant.size_or_volume }}" required></td>
+                        <td><input type="number" name="variant_price[]" value="{{ variant.price }}" required></td>
+                        <td><input type="number" name="variant_stock[]" value="{{ variant.stock }}" required></td>
+                        <td><button type="button" class="btn-remove-variant" onclick="removeRow(this)">✕</button></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td><input type="text" name="variant_size[]" placeholder="e.g. 1 Litre"></td>
+                        <td><input type="number" name="variant_price[]" placeholder="0"></td>
+                        <td><input type="number" name="variant_stock[]" placeholder="0"></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" class="btn-add-variant" onclick="addRow()">+ Add New Variant</button>
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="4">{{ product.description }}</textarea>
+        </div>
+
+        <div class="image-upload-row">
+            <div class="form-group">
+                <label>Main Image</label>
+                <input type="file" name="image" onchange="preview(this, 'p1')" accept="image/*">
+                <img id="p1" class="preview-box" src="{{ product.image.url }}">
+            </div>
+            <div class="form-group">
+                <label>Image 2</label>
+                <input type="file" name="image_2" onchange="preview(this, 'p2')" accept="image/*">
+                <img id="p2" class="preview-box" src="{% if product.image_2 %}{{ product.image_2.url }}{% endif %}" style="{% if not product.image_2 %}display: none;{% endif %}">
+            </div>
+            <div class="form-group">
+                <label>Image 3</label>
+                <input type="file" name="image_3" onchange="preview(this, 'p3')" accept="image/*">
+                <img id="p3" class="preview-box" src="{% if product.image_3 %}{{ product.image_3.url }}{% endif %}" style="{% if not product.image_3 %}display: none;{% endif %}">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="is_offer" {% if product.is_offer %}checked{% endif %}> Special Offer</label>
+            <label><input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %}> Featured</label>
+            <label><input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %}> Active Status</label>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 15px; align-items: center;">
+            <button type="submit" class="btn-submit">💾 Update Product</button>
+            <a href="{% url 'product_list' %}" style="color: #718096; text-decoration: none; font-weight: 600;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 1. Main Category based Sub Category Filtering
+    document.getElementById('id_category').addEventListener('change', function() {
+        var catId = this.value;
+        var subSelect = document.getElementById('id_subcategory');
+        var subOptions = subSelect.options;
+
+        for (var i = 0; i < subOptions.length; i++) {
+            var opt = subOptions[i];
+            if (opt.value === "" || opt.getAttribute('data-cat') === catId) {
+                opt.hidden = false;
+            } else {
+                opt.hidden = true;
+            }
+        }
+        subSelect.value = ""; // Reset subcategory when category changes
+        document.getElementById('id_nested_category').value = ""; // Reset nested too
+    });
+
+    // 2. Sub Category based Nested Category Filtering
+    document.getElementById('id_subcategory').addEventListener('change', function() {
+        var subId = this.value;
+        var nestedSelect = document.getElementById('id_nested_category');
+        var nestedOptions = nestedSelect.options;
+
+        for (var i = 0; i < nestedOptions.length; i++) {
+            var opt = nestedOptions[i];
+            if (opt.value === "" || opt.getAttribute('data-sub') === subId) {
+                opt.hidden = false;
+            } else {
+                opt.hidden = true;
+            }
+        }
+        nestedSelect.value = ""; 
+    });
+
+    // Initial Filter on Page Load (For Update Page)
+    window.onload = function() {
+        var catId = document.getElementById('id_category').value;
+        var subId = document.getElementById('id_subcategory').value;
+
+        if(catId) {
+            var subOptions = document.getElementById('id_subcategory').options;
+            for (var i = 0; i < subOptions.length; i++) {
+                if (subOptions[i].value !== "" && subOptions[i].getAttribute('data-cat') !== catId) {
+                    subOptions[i].hidden = true;
+                }
+            }
+        }
+        if(subId) {
+            var nestedOptions = document.getElementById('id_nested_category').options;
+            for (var i = 0; i < nestedOptions.length; i++) {
+                if (nestedOptions[i].value !== "" && nestedOptions[i].getAttribute('data-sub') !== subId) {
+                    nestedOptions[i].hidden = true;
+                }
+            }
+        }
+    };
+
+    function addRow() {
+        var table = document.getElementById("variantTable").getElementsByTagName('tbody')[0];
+        var row = table.insertRow(-1);
+        row.innerHTML = `
+            <td><input type="text" name="variant_size[]" placeholder="e.g. 500ml" required></td>
+            <td><input type="number" name="variant_price[]" placeholder="0" required></td>
+            <td><input type="number" name="variant_stock[]" placeholder="0" required></td>
+            <td><button type="button" class="btn-remove-variant" onclick="removeRow(this)">✕</button></td>
+        `;
+    }
+
+    function removeRow(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    function preview(input, id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) { 
+                document.getElementById(id).src = e.target.result; 
+                document.getElementById(id).style.display = 'block'; 
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

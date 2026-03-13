@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    body { background-color: #f8fafc !important; font-family: 'Inter', sans-serif; }
+    
+    .form-container { max-width: 700px; margin: 50px auto; padding: 0 20px; }
+    
+    .form-card {
+        background: #fff; border-radius: 20px; padding: 40px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f1f1f1;
+    }
+
+    .form-label {
+        font-weight: 700; color: #475569; font-size: 0.75rem;
+        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+
+    .form-control {
+        border-radius: 12px; padding: 12px 18px; border: 1px solid #e2e8f0;
+        background-color: #fcfcfc; transition: 0.3s; font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+        border-color: #007bff; box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+        background-color: #fff; outline: none;
+    }
+
+    .btn-save {
+        background: #007bff; color: #fff; border-radius: 12px;
+        padding: 14px 30px; font-weight: 600; border: none;
+        transition: 0.3s; width: 100%; margin-top: 20px;
+    }
+
+    .btn-save:hover { background: #0056b3; transform: translateY(-1px); }
+
+    .btn-cancel {
+        display: block; text-align: center; margin-top: 15px;
+        color: #64748b; text-decoration: none; font-weight: 500; font-size: 0.9rem;
+    }
+    
+    .section-header { margin-bottom: 30px; text-align: center; }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <div class="section-header">
+            <h3 class="fw-bold text-dark">Add New Address</h3>
+            <p class="text-muted">Enter your shipping details below</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="full_name" class="form-control" placeholder="e.g. Mubashir T" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Street Address / House Name</label>
+                <input type="text" name="street_address" class="form-control" placeholder="House name, Street, Area" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label">City</label>
+                    <input type="text" name="city" class="form-control" placeholder="City name" required>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label class="form-label">Pincode</label>
+                    <input type="text" name="pincode" class="form-control" placeholder="6-digit code" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Phone Number (For Delivery)</label>
+                <input type="text" name="phone" class="form-control" placeholder="Phone number" required>
+            </div>
+
+            <button type="submit" class="btn-save shadow-sm">
+                <i class="fas fa-check-circle me-2"></i>Save Address
+            </button>
+            
+            <a href="{% url 'profile' %}" class="btn-cancel">Cancel and Go Back</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

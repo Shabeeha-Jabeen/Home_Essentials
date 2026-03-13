@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Our Stores | HomeEssentials{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contact.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <div class="contact-header">
+        <h1>Our Local Stores</h1>
+        <p>ഞങ്ങളുടെ രണ്ട് ഷോപ്പുകളും നിങ്ങളുടെ തൊട്ടടുത്തുണ്ട്. നിങ്ങൾക്ക് സൗകര്യപ്രദമായ ഷോപ്പുമായി ബന്ധപ്പെടാം.</p>
+    </div>
+
+    <div class="stores-grid">
+        <div class="store-card">
+            <div class="store-badge">Main Branch</div>
+            <h3>HomeEssentials - Shop 1</h3>
+            <p class="store-loc"><i class="fas fa-map-marker-alt"></i> Near City Hospital, Local Area Name</p>
+            
+            <div class="store-actions">
+                <a href="tel:+918156848059" class="btn-call"><i class="fas fa-phone-alt"></i> Call Now</a>
+                <a href="https://wa.me/918156848059" class="btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            </div>
+            <p class="timing">Open: 9:00 AM - 8:30 PM</p>
+        </div>
+
+        <div class="store-card">
+            <div class="store-badge">Branch 2</div>
+            <h3>HomeEssentials - Shop 2</h3>
+            <p class="store-loc"><i class="fas fa-map-marker-alt"></i> Near New Bus Stand, Nearby Area Name</p>
+            
+            <div class="store-actions">
+                <a href="tel:+919846206951" class="btn-call"><i class="fas fa-phone-alt"></i> Call Now</a>
+                <a href="https://wa.me/919846206951" class="btn-wa"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            </div>
+            <p class="timing">Open: 9:30 AM - 9:00 PM</p>
+        </div>
+    </div>
+
+    <div class="delivery-banner">
+        <i class="fas fa-shipping-fast"></i>
+        <span>ഈ രണ്ട് സ്ഥലങ്ങളിൽ നിന്നും ഞങ്ങൾ അതിവേഗ ഹോം ഡെലിവറി ഉറപ്പാക്കുന്നു!</span>
+    </div>
+</div>
+{% endblock %}

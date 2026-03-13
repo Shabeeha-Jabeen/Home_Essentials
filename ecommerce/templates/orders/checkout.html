@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 1100px; margin: 40px auto; padding: 20px; font-family: 'Segoe UI', sans-serif;">
+    <h2 style="text-align: center; margin-bottom: 30px; color: #1e293b;">Checkout</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: {% if message.tags == 'error' %}#fee2e2; color: #991b1b;{% else %}#dcfce7; color: #166534;{% endif %} border: 1px solid currentColor;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form id="checkout-form" method="POST" style="display: flex; gap: 30px; flex-wrap: wrap;">
+        {% csrf_token %}
+        
+        <div style="flex: 2; min-width: 300px;">
+            <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px;">
+                <h4 style="margin-top: 0; margin-bottom: 20px; color: #334155; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Select a Saved Address</h4>
+                <div style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px;">
+                    {% for addr in saved_addresses %}
+                    <div onclick="applySavedAddress('{{ addr.full_name|escapejs }}', '{{ addr.street_address|escapejs }}', '{{ addr.landmark|escapejs }}', '{{ addr.city|escapejs }}', '{{ addr.pincode|escapejs }}', '{{ addr.phone_number|escapejs }}')" 
+                         style="min-width: 240px; border: 2px solid #e2e8f0; padding: 15px; border-radius: 10px; cursor: pointer; background: #fff; transition: 0.3s;"
+                         onmouseover="this.style.borderColor='#2563eb'" onmouseout="this.style.borderColor='#e2e8f0'">
+                        <p style="margin: 0; font-weight: bold;">{{ addr.full_name }}</p>
+                        <p style="margin: 8px 0; font-size: 13px; color: #64748b;">{{ addr.street_address|truncatechars:30 }}, {{ addr.city }}</p>
+                        {% if addr.landmark %}
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">Near: {{ addr.landmark }}</p>
+                        {% endif %}
+                        <div style="font-size: 12px; color: #2563eb; font-weight: 600; margin-top: 5px;">Click to select</div>
+                    </div>
+                    {% empty %}
+                    <p style="font-size: 13px; color: #94a3b8;">No saved addresses found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div id="delivery-details-box" style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <h4 style="margin-top: 0; margin-bottom: 20px;">Delivery Details</h4>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 14px; margin-bottom: 5px;">Full Name</label>
+                    <input type="text" name="full_name" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 14px; margin-bottom: 5px;">Shipping Address (House/Flat, Street)</label>
+                    <textarea name="address" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; height: 60px;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 14px; margin-bottom: 5px;">Landmark (Optional)</label>
+                    <input type="text" name="landmark" placeholder="e.g. Near City Hospital" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 14px; margin-bottom: 5px;">City</label>
+                        <input type="text" name="city" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 14px; margin-bottom: 5px;">Pincode</label>
+                        <input type="text" name="pincode" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; font-size: 14px; margin-bottom: 5px;">Phone Number</label>
+                    <input type="text" name="phone" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+
+                <h4 style="margin: 30px 0 15px; border-top: 1px solid #e2e8f0; padding-top: 20px;">Payment Method</h4>
+                
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px solid #bbf7d0; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                            <input type="radio" name="payment_method" value="WALLET" 
+                                   {% if user.wallet.balance < cart.total_price %} disabled {% endif %}> 
+                            Pay with Wallet
+                        </label>
+                        <span style="font-weight: 700; color: #15803d;">Balance: ₹{{ user.wallet.balance|default:"0.00" }}</span>
+                    </div>
+                    {% if user.wallet.balance < cart.total_price %}
+                        <small style="color: #ef4444; display: block; margin-top: 5px;">Insufficient balance</small>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; padding-left: 5px;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <input type="radio" name="payment_method" value="COD" checked> Cash on Delivery (COD)
+                    </label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                        <input type="radio" name="payment_method" value="ONLINE"> Online Payment (Stripe/Razorpay)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px;">
+            <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 20px;">
+                <h4 style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Order Summary</h4>
+                
+                <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                    {% for item in cart_items %}
+                    <div style="display: flex; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f8fafc; padding-bottom: 12px;">
+                        <img src="{{ item.product.image.url }}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid #f1f5f9;">
+                        
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 2px;">
+                                <span style="font-weight: 600; color: #1e293b;">{{ item.product.name }}</span>
+                                <span style="font-weight: 700;">₹{{ item.sub_total }}</span>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #64748b;">
+                                {% if item.variant %}
+                                    <span style="background: #f1f5f9; padding: 1px 6px; border-radius: 4px; margin-right: 5px; color: #475569;">
+                                        Size: <strong>{{ item.variant.size_or_volume }}</strong>
+                                    </span>
+                                {% endif %}
+                                
+                                {% if item.product.material %}
+                                    <span>Material: {{ item.product.material.name }}</span>
+                                {% endif %}
+                                
+                                <span style="display: block; margin-top: 4px; color: #94a3b8;">Quantity: {{ item.quantity }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div style="border-top: 2px solid #f1f5f9; padding-top: 15px; margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 22px; color: #1e293b;">
+                        <span>Total</span>
+                        <span>₹{{ cart.total_price }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #2563eb; color: white; border: none; padding: 16px; border-radius: 8px; margin-top: 25px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;"
+                        onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-2px)';" 
+                        onmouseout="this.style.background='#2563eb'; this.style.transform='translateY(0)';">
+                    Confirm & Place Order
+                </button>
+                
+                <p style="text-align: center; font-size: 12px; color: #94a3b8; margin-top: 15px;">
+                    <i class="fas fa-lock"></i> SSL Encrypted & Secure Checkout
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+<script>
+    function applySavedAddress(name, street, land, city, pin, ph) {
+        document.getElementsByName('full_name')[0].value = name;
+        document.getElementsByName('address')[0].value = street;
+        document.getElementsByName('landmark')[0].value = land;
+        document.getElementsByName('city')[0].value = city;
+        document.getElementsByName('pincode')[0].value = pin;
+        document.getElementsByName('phone')[0].value = ph;
+        
+        const box = document.getElementById('delivery-details-box');
+        box.style.backgroundColor = '#f0f9ff';
+        box.style.borderColor = '#bae6fd';
+        setTimeout(() => { 
+            box.style.backgroundColor = '#f8fafc'; 
+            box.style.borderColor = '#e2e8f0';
+        }, 600);
+    }
+
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        const method = document.querySelector('input[name="payment_method"]:checked').value;
+        
+        if (method === 'WALLET') {
+            this.action = "/accounts/wallet-payment/"; 
+        } else if (method === 'ONLINE') {
+            this.action = "/orders/create-checkout-session/"; 
+        } else {
+            this.action = "/orders/checkout/"; 
+        }
+    });
+</script>
+{% endblock %}
