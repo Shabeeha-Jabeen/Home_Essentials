@@ -21,6 +21,17 @@
     input, select, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; transition: 0.3s; font-size: 14px; }
     input:focus, select:focus { border-color: #008080; box-shadow: 0 0 0 3px rgba(0,128,128,0.1); }
 
+    /* Messages Styling */
+    .alert { padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 500; }
+    .alert-error { background-color: #fff5f5; border: 1px solid #feb2b2; color: #c53030; }
+    .alert-success { background-color: #f0fff4; border: 1px solid #9ae6b4; color: #276749; }
+
+    .offer-box { 
+        background: #fff5f5; padding: 20px; border-radius: 10px; 
+        border: 1px solid #feb2b2; margin: 20px 0; 
+        display: {% if product.is_offer %}block{% else %}none{% endif %}; 
+    }
+
     .variant-section { 
         background: #f8fafc; padding: 25px; border-radius: 12px; 
         border: 1px solid #e2e8f0; margin: 25px 0; 
@@ -47,6 +58,14 @@
         <a href="{% url 'product_list' %}" style="text-decoration: none; color: #008080;">←</a>
         <span>🛠️ Update Product: {{ product.name }}</span>
     </h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
     
     <form method="POST" enctype="multipart/form-data" id="productForm">
         {% csrf_token %}
@@ -108,6 +127,31 @@
             <div class="form-group">
                 <label>Base Price (₹) *</label>
                 <input type="number" name="price" id="price" value="{{ product.price }}" required step="0.01">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="is_offer" id="is_offer_checkbox" onchange="toggleOffer()" {% if product.is_offer %}checked{% endif %}> Special Offer</label>
+            <label><input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %}> Featured</label>
+            <label><input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %}> Active Status</label>
+        </div>
+
+        <div class="offer-box" id="offer_config">
+            <h4 style="margin: 0 0 15px 0; color: #c53030; font-size: 13px;">OFFER CONFIGURATION</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Discount Price (₹) *</label>
+                    <input type="number" name="discount_price" id="discount_price" value="{{ product.discount_price|default_if_none:'' }}" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Offer End Date *</label>
+                    <input type="datetime-local" name="offer_end_date" id="offer_end_date" value="{{ product.offer_end_date|date:'Y-m-d\TH:i' }}">
+                </div>
+                <div class="form-group">
+                    <label>Discount (%)</label>
+                    <input type="text" id="discount_percentage_display" readonly style="background: #edf2f7; color: #718096;" value="{{ product.discount_percentage }}% Off">
+                    <input type="hidden" name="discount_percentage" id="discount_percentage_hidden" value="{{ product.discount_percentage }}">
+                </div>
             </div>
         </div>
 
@@ -173,12 +217,6 @@
             </div>
         </div>
 
-        <div class="checkbox-group">
-            <label><input type="checkbox" name="is_offer" {% if product.is_offer %}checked{% endif %}> Special Offer</label>
-            <label><input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %}> Featured</label>
-            <label><input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %}> Active Status</label>
-        </div>
-
         <div style="margin-top: 30px; display: flex; gap: 15px; align-items: center;">
             <button type="submit" class="btn-submit">💾 Update Product</button>
             <a href="{% url 'product_list' %}" style="color: #718096; text-decoration: none; font-weight: 600;">Cancel</a>
@@ -187,62 +225,41 @@
 </div>
 
 <script>
-    // 1. Main Category based Sub Category Filtering
-    document.getElementById('id_category').addEventListener('change', function() {
-        var catId = this.value;
-        var subSelect = document.getElementById('id_subcategory');
-        var subOptions = subSelect.options;
+    function toggleOffer() {
+        const checkBox = document.getElementById("is_offer_checkbox");
+        const config = document.getElementById("offer_config");
+        const discPrice = document.getElementById("discount_price");
+        const endDate = document.getElementById("offer_end_date");
 
-        for (var i = 0; i < subOptions.length; i++) {
-            var opt = subOptions[i];
-            if (opt.value === "" || opt.getAttribute('data-cat') === catId) {
-                opt.hidden = false;
-            } else {
-                opt.hidden = true;
-            }
+        if (checkBox.checked) {
+            config.style.display = "block";
+           
+        } else {
+            config.style.display = "none";
         }
-        subSelect.value = ""; // Reset subcategory when category changes
-        document.getElementById('id_nested_category').value = ""; // Reset nested too
-    });
+    }
 
-    // 2. Sub Category based Nested Category Filtering
-    document.getElementById('id_subcategory').addEventListener('change', function() {
-        var subId = this.value;
-        var nestedSelect = document.getElementById('id_nested_category');
-        var nestedOptions = nestedSelect.options;
+    function updatePercentage() {
+        const base = parseFloat(document.getElementById('price').value);
+        const offer = parseFloat(document.getElementById('discount_price').value);
+        const percDisplay = document.getElementById('discount_percentage_display');
+        const percHidden = document.getElementById('discount_percentage_hidden');
 
-        for (var i = 0; i < nestedOptions.length; i++) {
-            var opt = nestedOptions[i];
-            if (opt.value === "" || opt.getAttribute('data-sub') === subId) {
-                opt.hidden = false;
-            } else {
-                opt.hidden = true;
-            }
+        if (base > 0 && offer > 0 && offer < base) {
+            const perc = Math.round(((base - offer) / base) * 100);
+            percDisplay.value = perc + "% Off";
+            percHidden.value = perc;
+        } else {
+            percDisplay.value = "";
+            percHidden.value = "";
         }
-        nestedSelect.value = ""; 
-    });
+    }
 
-    // Initial Filter on Page Load (For Update Page)
+    document.getElementById('price').addEventListener('input', updatePercentage);
+    document.getElementById('discount_price').addEventListener('input', updatePercentage);
+
     window.onload = function() {
-        var catId = document.getElementById('id_category').value;
-        var subId = document.getElementById('id_subcategory').value;
-
-        if(catId) {
-            var subOptions = document.getElementById('id_subcategory').options;
-            for (var i = 0; i < subOptions.length; i++) {
-                if (subOptions[i].value !== "" && subOptions[i].getAttribute('data-cat') !== catId) {
-                    subOptions[i].hidden = true;
-                }
-            }
-        }
-        if(subId) {
-            var nestedOptions = document.getElementById('id_nested_category').options;
-            for (var i = 0; i < nestedOptions.length; i++) {
-                if (nestedOptions[i].value !== "" && nestedOptions[i].getAttribute('data-sub') !== subId) {
-                    nestedOptions[i].hidden = true;
-                }
-            }
-        }
+        toggleOffer();
     };
 
     function addRow() {
@@ -257,8 +274,7 @@
     }
 
     function removeRow(btn) {
-        var row = btn.parentNode.parentNode;
-        row.parentNode.removeChild(row);
+        btn.closest('tr').remove();
     }
 
     function preview(input, id) {

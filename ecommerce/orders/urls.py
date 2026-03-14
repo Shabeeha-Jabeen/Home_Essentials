@@ -22,4 +22,7 @@ urlpatterns = [
     path('my-orders/', views.order_list, name='order_list'),
     path('cancel/<int:order_id>/', views.cancel_order, name='cancel_order'),
     path('return/<int:order_id>/', views.return_order, name='return_order'),
+
+    path('order-item/cancel/<int:item_id>/', views.cancel_order_item, name='cancel_order_item'),
+    path('order-item/return/<int:item_id>/', views.return_order_item, name='return_order_item'),
 ]

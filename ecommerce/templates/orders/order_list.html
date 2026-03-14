@@ -1,76 +1,82 @@
 {% extends 'base.html' %}
 {% block content %}
-<div style="max-width: 950px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
-    <h2 style="margin-bottom: 20px; font-weight: 700; color: #1e293b;">My Orders</h2>
-    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-        <thead style="background: #f1f5f9;">
-            <tr>
-                <th style="padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: left;">Order ID</th>
-                <th style="padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: left;">Date</th>
-                <th style="padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: left;">Total Price</th>
-                <th style="padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: left;">Status</th>
-                <th style="padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: center;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr style="border-bottom: 1px solid #f1f5f9; transition: 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                <td style="padding: 15px; font-weight: 600;">#{{ order.id }}</td>
-                <td style="padding: 15px;">{{ order.created_at|date:"d M Y" }}</td>
-                <td style="padding: 15px; font-weight: 600;">₹{{ order.total_amount }}</td> 
-                
-                <td style="padding: 15px;">
-                    {% if order.status == 'Pending' or order.status == 'Placed' %}
-                        <span style="background: #fef9c3; color: #854d0e; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">{{ order.status }}</span>
-                    {% elif order.status == 'Confirmed' %}
-                        <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Confirmed</span>
-                    {% elif order.status == 'Shipped' %}
-                        <span style="background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Shipped</span>
-                    {% elif order.status == 'Delivered' %}
-                        <span style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Delivered</span>
-                    {% elif order.status == 'Cancelled' %}
-                        <span style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Cancelled</span>
-                    {% elif order.status == 'Return Requested' %}
-                        <span style="background: #ffedd5; color: #9a3412; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Return Requested</span>
-                    {% elif order.status == 'Returned' %}
-                        <span style="background: #f3e8ff; color: #6b21a8; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">Returned</span>
-                    {% else %}
-                        <span style="background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">{{ order.status }}</span>
-                    {% endif %}
-                </td>
+<div style="max-width: 1100px; margin: 40px auto; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <h2 style="margin-bottom: 25px; font-weight: 700; color: #1e293b; letter-spacing: -0.5px;">My Orders</h2>
+    
+    <div style="overflow-x: auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <table style="width: 100%; border-collapse: collapse; background: white; min-width: 900px;">
+            <thead style="background: #f8fafc;">
+                <tr>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Order ID</th>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Date</th>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Shipping Address</th>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Total Amount</th>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
+                    <th style="padding: 18px 15px; border-bottom: 2px solid #edf2f7; text-align: center; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#fcfdfe'" onmouseout="this.style.background='white'">
+                    <td style="padding: 20px 15px; font-weight: 700; color: #334155;">#{{ order.id }}</td>
+                    <td style="padding: 20px 15px; color: #64748b;">{{ order.created_at|date:"d M Y" }}</td>
+                    
+                    <td style="padding: 20px 15px;">
+                        <div style="font-size: 0.8rem; color: #475569; max-width: 200px; line-height: 1.4;">
+                            <strong style="color: #1e293b; display: block;">{{ order.full_name }}</strong>
+                            <span style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ order.address }}">
+                                {{ order.address|truncatechars:30 }}
+                            </span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">{{ order.city }}, {{ order.pincode }}</span>
+                        </div>
+                    </td>
 
-                <td style="padding: 15px; text-align: center;">
-                    <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                        <a href="{% url 'order_detail' order.id %}" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.9rem; border: 1px solid #2563eb; padding: 4px 10px; border-radius: 6px; transition: 0.3s;" onmouseover="this.style.background='#2563eb'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#2563eb'">Details</a>
-                        
-                        {% if order.status == 'Pending' or order.status == 'Placed' or order.status == 'Confirmed' %}
-                            <a href="{% url 'cancel_order' order.id %}" 
-                               onclick="return confirm('Are you sure you want to cancel order #{{order.id}}?')"
-                               style="background: #dc2626; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: 0.3s;"
-                               onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
-                               Cancel
+                    <td style="padding: 20px 15px; font-weight: 700; color: #1e293b;">₹{{ order.total_amount }}</td> 
+                    
+                    <td style="padding: 20px 15px;">
+                        <span style="padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+                            {% if order.status == 'Delivered' %} background: #dcfce7; color: #166534;
+                            {% elif order.status == 'Cancelled' %} background: #fee2e2; color: #991b1b;
+                            {% elif order.status == 'Return Requested' %} background: #fef9c3; color: #854d0e;
+                            {% elif order.status == 'Returned' %} background: #f3e8ff; color: #6b21a8;
+                            {% else %} background: #e0f2fe; color: #0369a1; {% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </td>
+
+                    <td style="padding: 20px 15px; text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                            <a href="{% url 'order_detail' order.id %}" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.8rem; border: 1.5px solid #2563eb; padding: 6px 14px; border-radius: 8px; transition: 0.3s;" onmouseover="this.style.background='#2563eb'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#2563eb'">
+                                View Details
                             </a>
-                        {% endif %}
-
-                        {% if order.status == 'Delivered' %}
-                            {# Return 7-day Logic #}
-                            {% if order.created_at > return_deadline %}
-                                <a href="{% url 'return_order' order.id %}" 
-                                   style="background: #ca8a04; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: 0.3s;"
-                                   onmouseover="this.style.background='#a16207'" onmouseout="this.style.background='#ca8a04'">
-                                   Return
+                            
+                            {% if order.status in 'Pending Placed Confirmed' %}
+                                <a href="{% url 'cancel_order' order.id %}" 
+                                   onclick="return confirm('Cancel this entire order?')"
+                                   style="background: #ef4444; color: white; padding: 7px 14px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                   Cancel Order
                                 </a>
-                            {% else %}
-                                <span style="color: #94a3b8; font-size: 0.75rem; font-style: italic;">Return policy expired</span>
                             {% endif %}
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" style="text-align: center; padding: 50px; color: #64748b;">No orders found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+                            {% if order.status == 'Delivered' and order.is_returnable %}
+                                <a href="{% url 'return_order' order.id %}" 
+                                   style="background: #ca8a04; color: white; padding: 7px 14px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                   Return All
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 80px 20px; color: #94a3b8;">
+                        <div style="font-size: 1.1rem; margin-bottom: 10px;">No orders yet!</div>
+                        <a href="{% url 'product_list' %}" style="color: #2563eb; text-decoration: none; font-weight: 600;">Shop Now →</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

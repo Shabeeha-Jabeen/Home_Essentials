@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 
-# --- CATEGORY MODELS ---
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='categories/')
@@ -40,22 +41,20 @@ class Material(models.Model):
     def __str__(self):
         return self.name
 
-# --- MAIN PRODUCT MODEL ---
 class Product(models.Model):
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, null=True, blank=True)
     nested_category = models.ForeignKey(NestedCategory, on_delete=models.SET_NULL, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
-    
-    # Material Field Added
     material = models.ForeignKey(Material, on_delete=models.SET_NULL, null=True, blank=True)
     
     description = models.TextField()
-    
-    # Base Price (Ithu general price aayi nalkam)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    is_offer = models.BooleanField(default=False)
+    offer_end_date = models.DateTimeField(null=True, blank=True)
 
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
     review_count = models.IntegerField(default=0)
@@ -65,15 +64,44 @@ class Product(models.Model):
     image_2 = models.ImageField(upload_to='products/', null=True, blank=True)
     image_3 = models.ImageField(upload_to='products/', null=True, blank=True)
 
-    is_offer = models.BooleanField(default=False)
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def is_offer_active(self):
+        """Checks if the offer is still valid based on date, checkbox, and price"""
+        if self.is_offer and self.discount_price and self.offer_end_date:
+            return timezone.now() < self.offer_end_date
+        return False
+
+    @property
+    def current_price(self):
+        """Returns discount price if offer is active, else normal price"""
+        if self.is_offer_active:
+            return self.discount_price
+        return self.price
+
+    @property
+    def discount_percentage(self):
+        """Calculates the percentage of discount"""
+        if self.is_offer_active and self.price > 0:
+            discount = self.price - self.discount_price
+            percentage = (discount / self.price) * 100
+            return round(percentage)
+        return 0
+
     def __str__(self):
         return self.name
 
-# --- PRODUCT VARIANTS (Liter, Size, Price changes) ---
+    def get_display_price(self):
+        """Returns discount price if offer is active, else normal price"""
+        if self.is_offer_active:
+            return self.discount_price
+        return self.price
+
+    def __str__(self):
+        return self.name
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     size_or_volume = models.CharField(max_length=50, help_text="Example: 500ml, 1L, 5L, Small, Large")
@@ -82,8 +110,6 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.size_or_volume}"
-
-# --- OTHER MODELS (Review, Wishlist, Banners) ---
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)

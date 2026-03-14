@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    #categories
+    
  
     # Main Category Management
     path('categories/', views.category_management, name='category_list'),
@@ -65,4 +65,10 @@ urlpatterns = [
     path('materials/update/<int:pk>/', views.update_material, name='update_material'),
     path('materials/delete/<int:pk>/', views.delete_material, name='delete_material'),
     path('materials/list/', views.material_list, name='material_list'),
+
+
+    path('admin/orders/', views.admin_order_list, name='admin_orders'),
+    path('admin/order/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    path('admin/order-item/approve/<int:item_id>/', views.approve_item_return, name='approve_item_return'),
+    path('admin/cancel-item/<int:item_id>/', views.cancel_item_admin, name='cancel_item_admin'),
 ]

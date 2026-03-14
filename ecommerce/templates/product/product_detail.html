@@ -108,8 +108,8 @@
 
                 <div class="price-box">
                     <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                        {% if product.is_offer and product.discount_price %}
-                            <span id="display-price" style="font-size: 40px; font-weight: 900; color: var(--danger-red);">₹{{ product.discount_price }}</span>
+                        {% if product.is_offer_active %}
+                            <span id="display-price" style="font-size: 40px; font-weight: 900; color: var(--danger-red);">₹{{ product.get_display_price }}</span>
                             <span class="old-price-detail">₹{{ product.price }}</span>
                             {% if product.discount_percentage %}
                                 <span class="offer-badge-detail">{{ product.discount_percentage }}% OFF</span>
@@ -119,6 +119,12 @@
                         {% endif %}
                     </div>
                     
+                    {% if product.is_offer_active and product.offer_end_date %}
+                    <p style="color: var(--danger-red); font-weight: 600; margin-top: 10px; font-size: 14px;">
+                        <i class="far fa-clock"></i> Limited Time Offer! Ends in: {{ product.offer_end_date|timeuntil }}
+                    </p>
+                    {% endif %}
+
                     <p id="display-stock" style="margin-top: 12px; font-weight: 700; color: #10b981; font-size: 15px;">
                         {% if product.stock > 0 %}<i class="fas fa-check-circle"></i> In Stock{% else %}<i class="fas fa-times-circle"></i> Out of Stock{% endif %}
                     </p>
@@ -225,8 +231,6 @@
     </div>
 </div>
 
-
-
 <script>
     function selectVariant(el) {
         document.querySelectorAll('.variant-btn').forEach(btn => btn.classList.remove('active'));
@@ -236,7 +240,6 @@
         const stock = parseInt(el.getAttribute('data-stock'));
         const variantId = el.getAttribute('data-id');
 
-        // Note: If you have discount_price in variants too, fetch it here
         document.getElementById('display-price').innerText = '₹' + price;
         document.getElementById('selectedVariantId').value = variantId;
 
@@ -282,22 +285,6 @@
                         }
                     }
                 });
-            });
-        }
-
-        const shareBtn = document.querySelector('.js-share-btn');
-        if (shareBtn) {
-            shareBtn.addEventListener('click', function() {
-                const title = this.dataset.title;
-                const url = window.location.origin + this.dataset.url;
-                if (navigator.share) {
-                    navigator.share({ title: title, text: 'Check out this product!', url: url });
-                } else {
-                    navigator.clipboard.writeText(url);
-                    const originalHTML = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
-                }
             });
         }
     });

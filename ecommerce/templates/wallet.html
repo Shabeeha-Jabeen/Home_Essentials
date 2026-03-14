@@ -1,41 +1,55 @@
 {% extends 'base.html' %}
 {% block content %}
-<div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: sans-serif;">
-    <h2 style="margin-bottom: 30px; font-weight: 700;">My Wallet</h2>
-
-    <div style="background: linear-gradient(135deg, #2563eb, #1e40af); color: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
-        <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 10px;">Available Balance</p>
-        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 800;">₹{{ wallet.balance }}</h1>
+<div style="max-width: 850px; margin: 50px auto; padding: 20px; font-family: 'Segoe UI', Roboto, sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;">My Wallet</h2>
+        <a href="{% url 'order_list' %}" style="text-decoration: none; font-size: 14px; color: #2563eb; font-weight: 600;">← Back to Orders</a>
     </div>
 
-    <div style="margin-top: 40px;">
-        <h3 style="margin-bottom: 20px; color: #1e293b;">Transaction History</h3>
+    <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 45px; border-radius: 24px; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);">
+        <div style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+        
+        <p style="font-size: 0.95rem; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Available Balance</p>
+        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 2rem; opacity: 0.8;">₹</span>{{ wallet.balance }}
+        </h1>
+        
+        <div style="margin-top: 30px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 12px; font-size: 13px;">
+            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+            Active Wallet
+        </div>
+    </div>
+
+    <div style="margin-top: 50px;">
+        <h3 style="margin-bottom: 25px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            🕒 Transaction History
+        </h3>
         
         {% if transactions %}
-            <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div style="background: #ffffff; border: 1px solid #f1f5f9; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
                 <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: #f8fafc;">
-                        <tr>
-                            <th style="padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0;">Details</th>
-                            <th style="padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0;">Type</th>
-                            <th style="padding: 15px; text-align: right; border-bottom: 1px solid #e2e8f0;">Amount</th>
+                    <thead>
+                        <tr style="background: #f8fafc;">
+                            <th style="padding: 18px 20px; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Details</th>
+                            <th style="padding: 18px 20px; text-align: center; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                            <th style="padding: 18px 20px; text-align: right; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for tx in transactions %}
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 15px;">
-                                <div style="font-weight: 600;">{{ tx.description }}</div>
-                                <div style="font-size: 0.8rem; color: #64748b;">{{ tx.created_at|date:"d M Y, h:i A" }}</div>
+                        <tr style="border-bottom: 1px solid #f8fafc; transition: all 0.2s;">
+                            <td style="padding: 20px;">
+                                <div style="font-weight: 700; color: #1e293b; font-size: 15px;">{{ tx.description }}</div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">{{ tx.created_at|date:"d M Y • h:i A" }}</div>
                             </td>
-                            <td style="padding: 15px;">
+                            <td style="padding: 20px; text-align: center;">
                                 {% if tx.transaction_type == 'CREDIT' %}
-                                    <span style="color: #166534; background: #dcfce7; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem;">Credit</span>
+                                    <span style="color: #065f46; background: #dcfce7; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;">RECEIVED</span>
                                 {% else %}
-                                    <span style="color: #991b1b; background: #fee2e2; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem;">Debit</span>
+                                    <span style="color: #991b1b; background: #fee2e2; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;">SPENT</span>
                                 {% endif %}
                             </td>
-                            <td style="padding: 15px; text-align: right; font-weight: 700; color: {% if tx.transaction_type == 'CREDIT' %}#16a34a{% else %}#dc2626{% endif %};">
+                            <td style="padding: 20px; text-align: right; font-weight: 800; font-size: 16px; color: {% if tx.transaction_type == 'CREDIT' %}#10b981{% else %}#1e293b{% endif %};">
                                 {% if tx.transaction_type == 'CREDIT' %}+{% else %}-{% endif %} ₹{{ tx.amount }}
                             </td>
                         </tr>
@@ -44,8 +58,8 @@
                 </table>
             </div>
         {% else %}
-            <div style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 15px; color: #64748b;">
-                No transactions yet.
+            <div style="text-align: center; padding: 60px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 20px; color: #94a3b8;">
+                <p style="margin: 0; font-size: 15px;">No transactions yet.</p>
             </div>
         {% endif %}
     </div>

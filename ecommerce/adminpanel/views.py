@@ -8,9 +8,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db import transaction
 from accounts.models import Wallet, WalletTransaction
-from product.models import Product, Category, SubCategory, NestedCategory, Brand, OfferBanner, Carousel, Wishlist, Review,Material 
-from .forms import CarouselForm, OfferBannerForm
-from orders.models import Order
+from product.models import Product, ProductVariant, Category, SubCategory, NestedCategory, Brand, Material,OfferBanner,Carousel,Wishlist,Review
+from .forms import CarouselForm, OfferBannerForm,ProductForm
+from orders.models import Order,OrderItem
 
 # ==========================================
 # 1. ADMIN DASHBOARD
@@ -44,8 +44,7 @@ def category_management(request):
     categories = Category.objects.all().order_by('-id')
     subcategories = SubCategory.objects.all().order_by('-id')
     nested_categories = NestedCategory.objects.all().order_by('-id')
-    materials = Material.objects.all().order_by('-id') # Puthiyath
-
+    materials = Material.objects.all().order_by('-id')
     
     if search_query:
         categories = categories.filter(name__icontains=search_query)
@@ -165,7 +164,7 @@ def product_list(request):
 
     products = Product.objects.all()
 
-    # 1. Search Logic
+    
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query) | 
@@ -173,7 +172,7 @@ def product_list(request):
             Q(subcategory__name__icontains=search_query)
         )
 
-    # 2. Sorting Logic
+  
     if sort_filter == 'low_stock':
         products = products.order_by('stock')  
     elif sort_filter == 'high_stock':
@@ -191,107 +190,75 @@ def product_list(request):
 @staff_member_required(login_url='login')
 def product_add(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        price = request.POST.get('price')
-        stock = request.POST.get('stock')
-        description = request.POST.get('description')
-        
-        category_id = request.POST.get('category')
-        subcategory_id = request.POST.get('subcategory')
-        nested_category_id = request.POST.get('nested_category') or None
-        material_id = request.POST.get('material')
-        brand_id = request.POST.get('brand')
-
-        try:
-            with transaction.atomic():
-                product = Product.objects.create(
-                    name=name,
-                    description=description,
-                    category_id=category_id,
-                    subcategory_id=subcategory_id,
-                    nested_category_id=nested_category_id,
-                    material_id=material_id,
-                    brand_id=brand_id,
-                    price=price, 
-                    stock=stock 
-                )
-                
-                if 'image' in request.FILES:
-                    product.image = request.FILES['image']
-                if 'image_2' in request.FILES:
-                    product.image_2 = request.FILES['image_2']
-                if 'image_3' in request.FILES:
-                    product.image_3 = request.FILES['image_3']
-                product.save()
-
-                messages.success(request, "Product added successfully!")
-                return redirect('product_list') 
-        except Exception as e:
-            messages.error(request, f"Error: {e}")
+       
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    product = form.save()
+                    messages.success(request, f"Product '{product.name}' added successfully!")
+                    return redirect('product_list')
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        else:
            
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.capitalize()}: {error}")
+    else:
+        form = ProductForm()
+    
     context = {
+        'form': form,
         'categories': Category.objects.filter(is_active=True),
         'subcategories': SubCategory.objects.all(),
         'nested_categories': NestedCategory.objects.all(),
         'materials': Material.objects.all(),
         'brands': Brand.objects.all(),
     }
-    
     return render(request, 'admin/product_add.html', context)
 @staff_member_required(login_url='login')
 def update_product(request, pk):
-    from product.models import Product, ProductVariant, Material, SubCategory, Brand, Category, NestedCategory
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == 'POST':
-        # 1. Basic Details Update
-        product.name = request.POST.get('name')
-        product.description = request.POST.get('description')
-        product.price = request.POST.get('price')
-        product.stock = request.POST.get('stock')
         
-        # 2. Foreign Key Updates (IDs)
-        product.brand_id = request.POST.get('brand') or None
-        product.material_id = request.POST.get('material') or None
-        product.category_id = request.POST.get('category')
-        product.subcategory_id = request.POST.get('subcategory')
-        product.nested_category_id = request.POST.get('nested_category') or None
-
-        # 3. Image Updates 
-        if 'image' in request.FILES:
-            product.image = request.FILES['image']
-        if 'image_2' in request.FILES:
-            product.image_2 = request.FILES['image_2']
-        if 'image_3' in request.FILES:
-            product.image_3 = request.FILES['image_3']
-
-        # 4. Checkbox Status
-        product.is_offer = 'is_offer' in request.POST
-        product.is_featured = 'is_featured' in request.POST
-        product.is_active = 'is_active' in request.POST
+        form = ProductForm(request.POST, request.FILES, instance=product)
         
-        product.save()
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    
+                    product = form.save()
+                    
+                    sizes = request.POST.getlist('variant_size[]')
+                    prices = request.POST.getlist('variant_price[]')
+                    stocks = request.POST.getlist('variant_stock[]')
 
-        # 5. Variants Update Logic
-        sizes = request.POST.getlist('variant_size[]')
-        prices = request.POST.getlist('variant_price[]')
-        stocks = request.POST.getlist('variant_stock[]')
-
-        product.variants.all().delete()
-
-        for i in range(len(sizes)):
-            if sizes[i].strip(): 
-                ProductVariant.objects.create(
-                    product=product,
-                    size_or_volume=sizes[i],
-                    price=prices[i],
-                    stock=stocks[i]
-                )
-        
-        messages.success(request, f"Product '{product.name}' updated successfully!")
-        return redirect('product_list')
+                
+                    product.variants.all().delete()
+                    for i in range(len(sizes)):
+                        if sizes[i].strip():
+                            ProductVariant.objects.create(
+                                product=product,
+                                size_or_volume=sizes[i],
+                                price=prices[i],
+                                stock=stocks[i]
+                            )
+                    
+                    messages.success(request, f"Product '{product.name}' updated successfully!")
+                    return redirect('product_list')
+            except Exception as e:
+                messages.error(request, f"Error saving variants: {e}")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
+    else:
+        form = ProductForm(instance=product)
 
     context = {
+        'form': form,
         'product': product,
         'categories': Category.objects.filter(is_active=True),
         'subcategories': SubCategory.objects.all(),
@@ -404,7 +371,6 @@ def admin_order_list(request):
     if search_query:
         orders = orders.filter(Q(id__icontains=search_query) | Q(user__username__icontains=search_query))
     return render(request, 'admin/admin_orders.html', {'orders': orders})
-
 @staff_member_required(login_url='login')
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -413,59 +379,63 @@ def update_order_status(request, order_id):
         new_status = request.POST.get('status')
         old_status = order.status 
 
-        
-        if old_status in ['Returned', 'Cancelled'] and order.is_paid:
-            
-             messages.warning(request, "This order status cannot be changed further as it is already processed.")
-             return redirect('admin_order_list')
+        if old_status in ['Returned', 'Cancelled']:
+             messages.warning(request, "This order is already finalized and cannot be changed.")
+             return redirect('admin_orders')
 
         try:
             with transaction.atomic():
-                order.status = new_status
-                
-                # --- Wallet Refund Logic (For both Returned and Cancelled) ---
                 refund_statuses = ['Returned', 'Cancelled']
                 
                 if new_status in refund_statuses and old_status not in refund_statuses:
-                    if order.is_paid or order.payment_method != 'COD':
-                        wallet, _ = Wallet.objects.get_or_create(user=order.user)
-                        wallet.balance += order.total_amount
-                        wallet.save()
+                    should_refund = False
+                    
+                    
+                    if new_status == 'Returned':
+                        should_refund = True
+                    elif new_status == 'Cancelled' and (order.is_paid or order.payment_method != 'COD'):
+                        should_refund = True
 
-                        # Transaction Record
-                        WalletTransaction.objects.create(
-                            wallet=wallet,
-                            amount=order.total_amount,
-                            transaction_type='CREDIT',
-                            description=f"Refund for {new_status} Order #{order.id}"
-                        )
-
-                        # Email Notification
-                        subject = f"Refund Credited! - Order #{order.id}"
-                        email_body = (
-                            f"Hi {order.user.username},\n\n"
-                            f"Your Order #{order.id} status has been updated to {new_status}.\n"
-                            f"An amount of ₹{order.total_amount} has been successfully credited to your wallet.\n\n"
-                            f"Best Regards,\nTeam HomeEssentials"
-                        )
+                    if should_refund:
                         
-                        send_mail(
-                            subject,
-                            email_body,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [order.user.email],
-                            fail_silently=False,
-                        )
-                        messages.success(request, f"Refund of ₹{order.total_amount} added to user wallet.")
+                        active_items = order.order_items.filter(status='Placed')
+                        refund_amount = sum(item.sub_total() for item in active_items)
 
+                        if refund_amount > 0:
+                            wallet, _ = Wallet.objects.get_or_create(user=order.user)
+                            wallet.balance += refund_amount
+                            wallet.save()
+
+                            WalletTransaction.objects.create(
+                                wallet=wallet,
+                                amount=refund_amount,
+                                transaction_type='CREDIT',
+                                description=f"Full Order {new_status} refund for Order #{order.id}"
+                            )
+                            order.is_paid = True 
+                            messages.success(request, f"Refund of ₹{refund_amount} added to user wallet.")
+
+                   
+                    for item in order.order_items.filter(status='Placed'):
+                        if item.product: 
+                            if item.variant:
+                                item.variant.stock += item.quantity
+                                item.variant.save()
+                            else:
+                                item.product.stock += item.quantity
+                                item.product.save()
+                        
+                        item.status = new_status 
+                        item.save()
+
+                order.status = new_status
                 order.save()
                 messages.success(request, f"Order status updated to {new_status}.")
 
         except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
+            messages.error(request, f"Error occurred: {str(e)}")
             
-    return redirect('admin_order_list')
-
+    return redirect('admin_orders')
 @staff_member_required(login_url='login')
 def return_requests_list(request): 
     returns = Order.objects.filter(status='Return Requested').order_by('-created_at')
@@ -608,3 +578,77 @@ def add_material(request):
             return redirect('material_list') 
             
     return render(request, 'admin/category/material_add.html')
+
+
+
+@staff_member_required(login_url='login')
+def approve_item_return(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id)
+    order = item.order
+    
+    if item.status == 'Return Requested':
+        try:
+            with transaction.atomic():
+                item.status = 'Returned'
+                item.save()
+                wallet, _ = Wallet.objects.get_or_create(user=order.user)
+                refund_amount = item.sub_total()
+                wallet.balance += refund_amount
+                wallet.save()
+
+                WalletTransaction.objects.create(
+                    wallet=wallet,
+                    amount=refund_amount,
+                    transaction_type='CREDIT',
+                    description=f"Refund: Returned {item.product_name} (Order #{order.id})"
+                )
+
+               
+                if item.variant:
+                    item.variant.stock += item.quantity
+                    item.variant.save()
+                elif item.product: 
+                    item.product.stock += item.quantity
+                    item.product.save()
+
+                
+                active_items = order.order_items.exclude(status__in=['Returned', 'Cancelled'])
+                if not active_items.exists():
+                    order.status = 'Returned'
+                    order.save()
+
+                messages.success(request, f"Refund of ₹{refund_amount} processed successfully.")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+    else:
+        messages.warning(request, "This item is not eligible for return approval.")
+    return redirect('admin_order_detail', order_id=order.id)
+
+
+@staff_member_required(login_url='login')
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, 'admin/admin_order_detail.html', {'order': order})
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+def cancel_item_admin(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id)
+    order = item.order
+
+    if item.status != 'Cancelled':
+       
+        item.status = 'Cancelled'
+        item.save()
+
+        
+        order.total_amount -= item.sub_total
+        order.save()
+        
+        messages.success(request, f"Item {item.product_name} has been cancelled.")
+    else:
+        messages.warning(request, "This item is already cancelled.")
+    
+   
+    return redirect('admin_order_detail', order_id=order.id)

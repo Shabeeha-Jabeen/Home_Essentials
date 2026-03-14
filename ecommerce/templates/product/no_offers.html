@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 500px; width: 100%; text-align: center; padding: 50px 30px; border-radius: 30px; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 20px 40px rgba(0,0,0,0.03);">
+        
+        <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;">
+            <span style="font-size: 45px; filter: grayscale(0.5);">🏷️</span>
+        </div>
+
+        <h2 style="color: #0f172a; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 15px;">
+            Waiting for Great Deals?
+        </h2>
+        
+        <p style="color: #64748b; line-height: 1.7; font-size: 15px; margin-bottom: 35px; padding: 0 10px;">
+            Our current offers have just wrapped up. We're refreshing our collection with brand new discounts for your home. Stay tuned!
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="{% url 'category_product_list' %}" 
+               style="background: #1e293b; color: white; padding: 15px 30px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: block; box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px rgba(30, 41, 59, 0.2)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 41, 59, 0.15)';">
+               Browse New Arrivals
+            </a>
+            
+            <a href="{% url 'home' %}" 
+               style="color: #64748b; text-decoration: none; font-size: 13px; font-weight: 600; padding: 10px; transition: color 0.2s;"
+               onmouseover="this.style.color='#1e293b'"
+               onmouseout="this.style.color='#64748b'">
+               Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Adding a subtle fade-in animation */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    div[style*="max-width: 500px"] {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+</style>
+{% endblock %}

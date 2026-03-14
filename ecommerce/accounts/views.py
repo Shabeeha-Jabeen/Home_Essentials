@@ -332,7 +332,9 @@ def wallet_payment(request):
         user = request.user
         cart = Cart.objects.get(user=user)
         cart_items = CartItem.objects.filter(cart=cart)
-        total_amount = cart.total_price()
+        
+        
+        total_amount = sum(item.product.get_display_price() * item.quantity for item in cart_items)
 
         try:
             with transaction.atomic():
@@ -341,36 +343,49 @@ def wallet_payment(request):
                     wallet.balance -= total_amount
                     wallet.save()
 
+                   
                     WalletTransaction.objects.create(
                         wallet=wallet,
                         amount=total_amount,
                         transaction_type='DEBIT',
-                        description=f"Payment for Order"
+                        description="Payment for Order"
                     )
+
+                    
                     order = Order.objects.create(
                         user=user,
                         full_name=request.POST.get('full_name'),
                         address=request.POST.get('address'),
-
-                        
                         city=request.POST.get('city'),
                         pincode=request.POST.get('pincode'),
                         phone=request.POST.get('phone'),
-                        total_amount=total_amount,
+                        total_amount=total_amount, 
                         payment_method='Wallet',
-                        is_paid=True 
+                        is_paid=True,
+                        status='Confirmed'
                     )
+
                     for item in cart_items:
+                        
+                        current_price = item.product.get_display_price()
+                        
                         OrderItem.objects.create(
                             order=order,
                             product=item.product,
+                            variant=item.variant, 
                             quantity=item.quantity,
-                            price=item.product.discount_price or item.product.price
+                            price=current_price, 
+                            product_name=item.product.name,
+                            product_image=item.product.image if item.product.image else None
                         )
-                        item.product.stock -= item.quantity
-                        item.product.save()
-                    cart_items.delete()
+                        if item.variant:
+                            item.variant.stock -= item.quantity
+                            item.variant.save()
+                        else:
+                            item.product.stock -= item.quantity
+                            item.product.save()
 
+                    cart_items.delete()
                     messages.success(request, "Order placed successfully using Wallet!")
                     return redirect('order_success_view', order_id=order.id)
                 else:
@@ -382,7 +397,5 @@ def wallet_payment(request):
             return redirect('checkout')
 
     return redirect('cart_view')
-
-
 def contact_view(request):
     return render(request, 'contact.html')

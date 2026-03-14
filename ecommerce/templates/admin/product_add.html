@@ -24,7 +24,14 @@
     }
     input:focus, select:focus, textarea:focus { border-color: #00a884; box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.1); background: #ffffff; }
 
-    /* Variant Table Styling */
+    /* Offer Section Styling */
+    .offer-box { 
+        background: #fff5f5; padding: 20px; border-radius: 10px; 
+        border: 1px solid #feb2b2; margin: 20px 0; display: none; 
+        animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
     .variant-section { 
         background: #f8fafc; padding: 25px; border-radius: 12px; 
         border: 1px solid #e2e8f0; margin: 25px 0; 
@@ -39,17 +46,14 @@
     }
     .btn-remove-variant { background: #feb2b2; color: #9b2c2c; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
 
-    .optional-tag { font-size: 10px; color: #a0aec0; font-weight: normal; text-transform: none; margin-left: 5px; }
-    .image-upload-section { background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed #cbd5e1; margin: 20px 0; }
-    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .preview-box { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: none; background: #eee; }
-
     .checkbox-container { display: flex; gap: 20px; padding: 15px; background: #f0fdf4; border-radius: 8px; margin-bottom: 20px; }
     .checkbox-item { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #065f46; cursor: pointer; font-size: 14px; }
 
     .btn-save { background: #00a884; color: white; border: none; padding: 14px 45px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .btn-save:hover { background: #008f6f; transform: translateY(-2px); }
     .btn-cancel { padding: 14px 20px; color: #718096; text-decoration: none; font-weight: 600; }
+    
+    .preview-box { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: none; background: #eee; }
 </style>
 
 <div class="form-container">
@@ -85,24 +89,23 @@
                     </select>
                 </div>
                 <div class="form-group">
-    <label>Sub Category</label>
-    <select name="subcategory" id="id_subcategory">
-        <option value="">Select Subcategory</option>
-        {% for s in subcategories %}
-            <option value="{{ s.id }}">{{ s.name }}</option>
-        {% endfor %}
-    </select>
-</div>
+                    <label>Sub Category</label>
+                    <select name="subcategory" id="id_subcategory">
+                        <option value="">Select Subcategory</option>
+                        {% for s in subcategories %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nested Category <span class="optional-tag">(Optional)</span></label>
+                    <select name="nested_category" id="id_nested_category">
+                        <option value="">None</option>
+                        {% for n in nested_categories %}
+                            <option value="{{ n.id }}" data-sub="{{ n.subcategory.id }}">{{ n.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-<div class="form-group">
-    <label>Nested Category <span class="optional-tag">(Optional)</span></label>
-    <select name="nested_category" id="id_nested_category">
-        <option value="">None</option>
-        {% for n in nested_categories %}
-            <option value="{{ n.id }}" data-sub="{{ n.subcategory.id }}">{{ n.name }}</option>
-        {% endfor %}
-    </select>
-</div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Material <span class="optional-tag">(Optional)</span></label>
@@ -112,8 +115,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Base Price (₹) <span class="optional-tag">(Used if no variants)</span></label>
-                    <input type="number" name="price" id="price" placeholder="0.00" step="0.01">
+                    <label>Base Price (₹) <span style="color:red">*</span></label>
+                    <input type="number" name="price" id="price" placeholder="0.00" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label>Base Stock</label>
@@ -121,10 +124,36 @@
                 </div>
             </div>
 
+            <div class="checkbox-container">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="is_offer" id="is_offer_checkbox" onchange="toggleOffer()"> Special Offer
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="is_featured"> Featured
+                </label>
+            </div>
+
+            <div class="offer-box" id="offer_config">
+                <h4 style="margin: 0 0 15px 0; color: #c53030; font-size: 13px;">OFFER SETTINGS</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Offer Price (₹) <span style="color:red">*</span></label>
+                        <input type="number" name="discount_price" id="discount_price" placeholder="450" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Offer End Date <span style="color:red">*</span></label>
+                        <input type="datetime-local" name="offer_end_date" id="offer_end_date">
+                    </div>
+                    <div class="form-group">
+                        <label>Discount (%)</label>
+                        <input type="text" id="discount_percentage_display" readonly style="background: #edf2f7; color: #718096;" placeholder="Auto-calculated">
+                        <input type="hidden" name="discount_percentage" id="discount_percentage_hidden">
+                    </div>
+                </div>
+            </div>
+
             <div class="variant-section">
                 <label style="color: #2d3748; font-size: 14px;">Product Variants (Size, Price & Stock)</label>
-                <p style="font-size: 11px; color: #718096; margin-bottom: 10px;">Add multiple sizes like 1 Litre, 2 Litre etc.</p>
-                
                 <table class="variant-table" id="variantTable">
                     <thead>
                         <tr>
@@ -136,9 +165,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><input type="text" name="variant_size[]" placeholder="e.g. 1 Litre" class="form-control"></td>
-                            <td><input type="number" name="variant_price[]" placeholder="500" class="form-control"></td>
-                            <td><input type="number" name="variant_stock[]" placeholder="10" class="form-control"></td>
+                            <td><input type="text" name="variant_size[]" placeholder="e.g. 1 Litre"></td>
+                            <td><input type="number" name="variant_price[]" placeholder="500"></td>
+                            <td><input type="number" name="variant_stock[]" placeholder="10"></td>
                             <td></td>
                         </tr>
                     </tbody>
@@ -151,23 +180,18 @@
                 <textarea name="description" rows="3" placeholder="Product details..."></textarea>
             </div>
 
-            <div class="image-upload-section">
+            <div class="image-upload-section" style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed #cbd5e1; margin: 20px 0;">
                 <label>Product Images <span class="optional-tag">(Main image is required)</span></label>
                 <div class="form-row" style="margin-top:10px;">
                     <input type="file" name="image" onchange="preview(this, 'p1')" required accept="image/*">
                     <input type="file" name="image_2" onchange="preview(this, 'p2')" accept="image/*">
                     <input type="file" name="image_3" onchange="preview(this, 'p3')" accept="image/*">
                 </div>
-                <div class="preview-grid">
+                <div class="preview-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
                     <img id="p1" class="preview-box">
                     <img id="p2" class="preview-box">
                     <img id="p3" class="preview-box">
                 </div>
-            </div>
-
-            <div class="checkbox-container">
-                <label class="checkbox-item"><input type="checkbox" name="is_offer"> Special Offer</label>
-                <label class="checkbox-item"><input type="checkbox" name="is_featured"> Featured</label>
             </div>
 
             <div class="action-buttons">
@@ -179,7 +203,46 @@
 </div>
 
 <script>
-    // Preview Image Logic
+    function toggleOffer() {
+        const checkBox = document.getElementById("is_offer_checkbox");
+        const config = document.getElementById("offer_config");
+        const discPrice = document.getElementById("discount_price");
+        const endDate = document.getElementById("offer_end_date");
+
+        if (checkBox.checked) {
+            config.style.display = "block";
+            discPrice.setAttribute("required", "true");
+            endDate.setAttribute("required", "true");
+        } else {
+            config.style.display = "none";
+            discPrice.removeAttribute("required");
+            endDate.removeAttribute("required");
+        }
+    }
+
+    // Auto Calculate Percentage
+    const priceInput = document.getElementById('price');
+    const discInput = document.getElementById('discount_price');
+    const percDisplay = document.getElementById('discount_percentage_display');
+    const percHidden = document.getElementById('discount_percentage_hidden');
+
+    function updatePercentage() {
+        const base = parseFloat(priceInput.value);
+        const offer = parseFloat(discInput.value);
+        if (base > 0 && offer > 0 && offer < base) {
+            const perc = Math.round(((base - offer) / base) * 100);
+            percDisplay.value = perc + "% Off";
+            percHidden.value = perc;
+        } else {
+            percDisplay.value = "";
+            percHidden.value = "";
+        }
+    }
+
+    priceInput.addEventListener('input', updatePercentage);
+    discInput.addEventListener('input', updatePercentage);
+
+    
     function preview(input, id) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -192,48 +255,32 @@
         }
     }
 
-    // Dynamic Row Logic for Variants
     function addRow() {
         var table = document.getElementById("variantTable").getElementsByTagName('tbody')[0];
         var row = table.insertRow(-1);
         row.innerHTML = `
-            <td><input type="text" name="variant_size[]" placeholder="e.g. 2 Litre" required></td>
-            <td><input type="number" name="variant_price[]" placeholder="800" required></td>
-            <td><input type="number" name="variant_stock[]" placeholder="5" required></td>
+            <td><input type="text" name="variant_size[]" placeholder="e.g. 2 Litre"></td>
+            <td><input type="number" name="variant_price[]" placeholder="800"></td>
+            <td><input type="number" name="variant_stock[]" placeholder="5"></td>
             <td><button type="button" class="btn-remove-variant" onclick="removeRow(this)">✕</button></td>
         `;
     }
 
     function removeRow(btn) {
-        var row = btn.parentNode.parentNode;
-        row.parentNode.removeChild(row);
+        btn.closest('tr').remove();
     }
 
-    // Nested Category Filtering Logic
+
     document.getElementById('id_subcategory').addEventListener('change', function() {
         var subId = this.value;
         var nestedSelect = document.getElementById('id_nested_category');
         var options = nestedSelect.options;
-
         for (var i = 0; i < options.length; i++) {
             var opt = options[i];
-            if (opt.value === "") {
-                opt.hidden = false;
-                continue;
-            }
-            // data-sub attribute check
-            if (opt.getAttribute('data-sub') === subId) {
-                opt.hidden = false;
-            } else {
-                opt.hidden = true;
-            }
+            if (opt.value === "") { opt.hidden = false; continue; }
+            opt.hidden = (opt.getAttribute('data-sub') !== subId);
         }
         nestedSelect.value = ""; 
     });
-
-    // Form Validation
-    document.getElementById('productForm').onsubmit = function(e) {
-        document.getElementById('saveBtn').innerText = "⏳ Saving...";
-    };
 </script>
 {% endblock %}
